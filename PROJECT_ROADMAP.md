@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 5/103**
+**Progress: 6/103**
 
 ---
 
@@ -11,7 +11,7 @@
 - [x] **03. Git** : `.gitignore` complet + Init.
 - [x] **04. Lint** : ESLint strict config.
 - [x] **05. Format** : Prettier config.
-- [ ] **06. Hooks** : Husky pre-commit.
+- [x] **06. Hooks** : Husky pre-commit.
 - [ ] **07. CSS** : Install Tailwind + Config.
 - [ ] **08. Colors** : Theme Token "Dark Mode" (Variables CSS).
 - [ ] **09. Typo** : Font Inter integration.
