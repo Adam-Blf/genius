@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 11/103**
+**Progress: 12/103**
 
 ---
 
@@ -20,7 +20,7 @@
 ## II. DATA CORE (11-20)
 
 - [x] **11. Model Question** : TS Interface (Generic).
-- [ ] **12. Model User** : TS Interface (Profile).
+- [x] **12. Model User** : TS Interface (Profile).
 - [ ] **13. Validation** : Zod schemas.
 - [ ] **14. Mocking** : Generator Script (100 items).
 - [ ] **15. Store** : Zustand setup.

@@ -1,2 +1,3 @@
 // TypeScript type definitions
-export {}
+export * from './question'
+export * from './user'
