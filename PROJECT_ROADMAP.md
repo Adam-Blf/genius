@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 60/103**
+**Progress: 70/103**
 
 ---
 
@@ -84,16 +84,16 @@
 
 ## VII. LEARNING ALGO (61-70)
 
-- [ ] **61. Algo** : Spaced Repetition (SM-2 simplified).
-- [ ] **62. Logic** : "To Review" Bucket.
-- [ ] **63. Mode** : Review Only Session.
-- [ ] **64. Mode** : Hardcore (Timer).
-- [ ] **65. UI** : Timer Component.
-- [ ] **66. Feedback** : Correct Answer Explanation.
-- [ ] **67. Data** : "Did you know?" facts.
-- [ ] **68. Source** : Link to Wikipedia.
-- [ ] **69. Filter** : Difficulty Sorting.
-- [ ] **70. Stats** : Accuracy Rate.
+- [x] **61. Algo** : Spaced Repetition (SM-2 simplified).
+- [x] **62. Logic** : "To Review" Bucket.
+- [x] **63. Mode** : Review Only Session.
+- [x] **64. Mode** : Hardcore (Timer).
+- [x] **65. UI** : Timer Component.
+- [x] **66. Feedback** : Correct Answer Explanation.
+- [x] **67. Data** : "Did you know?" facts.
+- [x] **68. Source** : Link to Wikipedia.
+- [x] **69. Filter** : Difficulty Sorting.
+- [x] **70. Stats** : Accuracy Rate.
 
 ## VIII. PWA & PERF (71-80)
 
@@ -142,4 +142,4 @@
 
 ---
 
-**Last Updated:** Phase 60
+**Last Updated:** Phase 70

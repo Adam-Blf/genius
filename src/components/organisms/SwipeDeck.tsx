@@ -8,9 +8,11 @@ import type { Category } from '@/types'
 
 interface SwipeDeckProps {
   onSessionComplete?: () => void
+  onCardChange?: () => void
+  showTimer?: boolean
 }
 
-export function SwipeDeck({ onSessionComplete }: SwipeDeckProps) {
+export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
   const currentDeck = useCurrentDeck()
   const currentIndex = useCurrentIndex()
   const selectedCategories = useSelectedCategories()
@@ -55,12 +57,13 @@ export function SwipeDeck({ onSessionComplete }: SwipeDeckProps) {
     addXp(10, currentQuestion.category as Category)
     updateStreak()
     nextCard()
+    onCardChange?.()
 
     // Check if session complete
     if (currentIndex + 1 >= currentDeck.length) {
       onSessionComplete?.()
     }
-  }, [currentQuestion, currentIndex, currentDeck.length, markAsKnown, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete])
+  }, [currentQuestion, currentIndex, currentDeck.length, markAsKnown, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete, onCardChange])
 
   // Handle swipe left (Learn)
   const handleSwipeLeft = useCallback(() => {
@@ -71,12 +74,13 @@ export function SwipeDeck({ onSessionComplete }: SwipeDeckProps) {
     addXp(20, currentQuestion.category as Category) // More XP for learning
     updateStreak()
     nextCard()
+    onCardChange?.()
 
     // Check if session complete
     if (currentIndex + 1 >= currentDeck.length) {
       onSessionComplete?.()
     }
-  }, [currentQuestion, currentIndex, currentDeck.length, markAsLearned, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete])
+  }, [currentQuestion, currentIndex, currentDeck.length, markAsLearned, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete, onCardChange])
 
   // Refresh deck
   const refreshDeck = useCallback(() => {

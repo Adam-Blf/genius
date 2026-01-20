@@ -1,6 +1,6 @@
 # Swipy
 
-![Progress](https://img.shields.io/badge/Progress-60%2F103-blue)
+![Progress](https://img.shields.io/badge/Progress-70%2F103-blue)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![PWA](https://img.shields.io/badge/PWA-Ready-green)
 
@@ -54,6 +54,13 @@ Voir [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) pour le détail des 103 phases.
 ## Changelog
 
 ### 2026-01-20
+- Phase 61-70: LEARNING ALGO complet
+  - Algorithme de répétition espacée SM-2 simplifié
+  - Mode Review Only pour cartes à réviser
+  - Mode Hardcore avec timer 10 secondes
+  - Filtre par difficulté (Facile/Moyen/Difficile)
+  - Timer component avec animation urgence
+  - Explanations et funFacts sur les cartes
 - Phase 51-60: GAMIFICATION complet
   - XP formulas et level thresholds
   - Streak calculator avec streak flame
