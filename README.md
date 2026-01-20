@@ -1,6 +1,6 @@
 # Swipy
 
-![Progress](https://img.shields.io/badge/Progress-80%2F103-blue)
+![Progress](https://img.shields.io/badge/Progress-90%2F103-blue)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![PWA](https://img.shields.io/badge/PWA-Ready-green)
 
@@ -54,6 +54,13 @@ Voir [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) pour le détail des 103 phases.
 ## Changelog
 
 ### 2026-01-20
+- Phase 81-90: SETTINGS & POLISH complet
+  - Page Settings redesignée avec sections
+  - Export des données en JSON
+  - Sound FX Engine avec Web Audio API
+  - Error Boundary global avec retry
+  - Glassmorphism et backdrop-blur
+  - Confetti sur Level Up Toast
 - Phase 71-80: PWA & PERF complet
   - vite-plugin-pwa avec manifest complet
   - Service Worker avec Workbox offline strategy

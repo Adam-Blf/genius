@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { ToastProvider, InstallPrompt } from '@/components/molecules'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { router } from './router'
 import './index.css'
 
@@ -20,9 +21,11 @@ registerSW({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ToastProvider>
-      <RouterProvider router={router} />
-      <InstallPrompt />
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <RouterProvider router={router} />
+        <InstallPrompt />
+      </ToastProvider>
+    </ErrorBoundary>
   </StrictMode>
 )

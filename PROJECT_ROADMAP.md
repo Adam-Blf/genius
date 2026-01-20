@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 80/103**
+**Progress: 90/103**
 
 ---
 
@@ -110,16 +110,16 @@
 
 ## IX. SETTINGS & POLISH (81-90)
 
-- [ ] **81. Page** : Settings View.
-- [ ] **82. Action** : Reset Data.
-- [ ] **83. Action** : Export Data (JSON).
-- [ ] **84. Audio** : Sound FX Engine.
-- [ ] **85. Audio** : Mute Toggle.
-- [ ] **86. Vibration** : Haptic Engine.
-- [ ] **87. UI** : Glassmorphism details.
-- [ ] **88. UI** : Confetti on Level Up.
-- [ ] **89. Layout** : Mobile Notch Safe Area.
-- [ ] **90. Error** : Error Boundary.
+- [x] **81. Page** : Settings View.
+- [x] **82. Action** : Reset Data.
+- [x] **83. Action** : Export Data (JSON).
+- [x] **84. Audio** : Sound FX Engine.
+- [x] **85. Audio** : Mute Toggle.
+- [x] **86. Vibration** : Haptic Engine.
+- [x] **87. UI** : Glassmorphism details.
+- [x] **88. UI** : Confetti on Level Up.
+- [x] **89. Layout** : Mobile Notch Safe Area.
+- [x] **90. Error** : Error Boundary.
 
 ## X. SHIP (91-100)
 
@@ -142,4 +142,4 @@
 
 ---
 
-**Last Updated:** Phase 80
+**Last Updated:** Phase 90
