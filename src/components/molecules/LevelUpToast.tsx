@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Icon } from '@/components/atoms'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 
 interface LevelUpToastProps {
   level: number
@@ -8,8 +8,23 @@ interface LevelUpToastProps {
   onClose: () => void
 }
 
+// Pre-compute confetti positions to avoid Math.random in render
+const confettiColors = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6']
+
 export function LevelUpToast({ level, isVisible, onClose }: LevelUpToastProps) {
   const [showConfetti, setShowConfetti] = useState(false)
+
+  // Memoize random values for confetti
+  const confettiParticles = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        left: `${50 + (Math.random() - 0.5) * 60}%`,
+        yOffset: -100 - Math.random() * 80,
+        xOffset: (Math.random() - 0.5) * 150,
+        color: confettiColors[i % 5],
+      })),
+    [isVisible]
+  ) // Regenerate when toast becomes visible
 
   useEffect(() => {
     if (isVisible) {
@@ -23,7 +38,9 @@ export function LevelUpToast({ level, isVisible, onClose }: LevelUpToastProps) {
         onClose()
       }, 3500)
 
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+      }
     }
   }, [isVisible, onClose])
 
@@ -54,21 +71,21 @@ export function LevelUpToast({ level, isVisible, onClose }: LevelUpToastProps) {
             {/* Confetti particles */}
             {showConfetti && (
               <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-                {[...Array(12)].map((_, i) => (
+                {confettiParticles.map((particle, i) => (
                   <motion.div
                     key={i}
                     className="absolute w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor: ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6'][i % 5],
-                      left: `${50 + (Math.random() - 0.5) * 60}%`,
+                      backgroundColor: particle.color,
+                      left: particle.left,
                       top: '50%',
                     }}
                     initial={{ opacity: 1, scale: 0, y: 0 }}
                     animate={{
                       opacity: [1, 1, 0],
                       scale: [0, 1, 0.5],
-                      y: [-20, -100 - Math.random() * 80],
-                      x: (Math.random() - 0.5) * 150,
+                      y: [-20, particle.yOffset],
+                      x: particle.xOffset,
                     }}
                     transition={{
                       duration: 1.5,
@@ -110,12 +127,8 @@ export function LevelUpToast({ level, isVisible, onClose }: LevelUpToastProps) {
                 <p className="text-sm font-medium text-primary uppercase tracking-wide">
                   Félicitations !
                 </p>
-                <h2 className="text-3xl font-bold text-text-primary mt-1">
-                  Niveau {level}
-                </h2>
-                <p className="text-sm text-text-secondary mt-2">
-                  Continue comme ça ! 🎉
-                </p>
+                <h2 className="text-3xl font-bold text-text-primary mt-1">Niveau {level}</h2>
+                <p className="text-sm text-text-secondary mt-2">Continue comme ça ! 🎉</p>
               </motion.div>
 
               {/* Close hint */}

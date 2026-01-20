@@ -67,16 +67,8 @@ export function ModeSelector({
               isDisabled && 'opacity-40 cursor-not-allowed'
             )}
           >
-            <Icon
-              name={option.icon}
-              className={cn('size-5', isActive ? '' : 'text-text-muted')}
-            />
-            <span
-              className={cn(
-                'text-xs font-medium',
-                isActive ? '' : 'text-text-secondary'
-              )}
-            >
+            <Icon name={option.icon} className={cn('size-5', isActive ? '' : 'text-text-muted')} />
+            <span className={cn('text-xs font-medium', isActive ? '' : 'text-text-secondary')}>
               {option.label}
             </span>
             {option.mode === 'review' && reviewCount > 0 && (
@@ -113,7 +105,9 @@ export function DifficultyFilter({ current, onChange, className }: DifficultyFil
       {difficultyOptions.map((option) => (
         <button
           key={option.value}
-          onClick={() => onChange(option.value)}
+          onClick={() => {
+            onChange(option.value)
+          }}
           className={cn(
             'flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
             current === option.value

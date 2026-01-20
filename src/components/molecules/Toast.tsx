@@ -43,10 +43,30 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts((prev) => [...prev, toast])
   }, [])
 
-  const success = useCallback((message: string, duration?: number) => addToast('success', message, duration), [addToast])
-  const error = useCallback((message: string, duration?: number) => addToast('error', message, duration), [addToast])
-  const warning = useCallback((message: string, duration?: number) => addToast('warning', message, duration), [addToast])
-  const info = useCallback((message: string, duration?: number) => addToast('info', message, duration), [addToast])
+  const success = useCallback(
+    (message: string, duration?: number) => {
+      addToast('success', message, duration)
+    },
+    [addToast]
+  )
+  const error = useCallback(
+    (message: string, duration?: number) => {
+      addToast('error', message, duration)
+    },
+    [addToast]
+  )
+  const warning = useCallback(
+    (message: string, duration?: number) => {
+      addToast('warning', message, duration)
+    },
+    [addToast]
+  )
+  const info = useCallback(
+    (message: string, duration?: number) => {
+      addToast('info', message, duration)
+    },
+    [addToast]
+  )
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, warning, info }}>
@@ -77,7 +97,13 @@ function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
   return createPortal(
     <div className="fixed bottom-20 left-0 right-0 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none">
       {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
+        <ToastItem
+          key={toast.id}
+          toast={toast}
+          onClose={() => {
+            removeToast(toast.id)
+          }}
+        />
       ))}
     </div>,
     document.body
@@ -91,9 +117,9 @@ interface ToastItemProps {
 }
 
 const toastConfig: Record<ToastType, { icon: IconName; bg: string; border: string }> = {
-  success: { icon: 'CheckCircle', bg: 'bg-success/20', border: 'border-success/30' },
-  error: { icon: 'XCircle', bg: 'bg-error/20', border: 'border-error/30' },
-  warning: { icon: 'AlertTriangle', bg: 'bg-warning/20', border: 'border-warning/30' },
+  success: { icon: 'CircleCheck', bg: 'bg-success/20', border: 'border-success/30' },
+  error: { icon: 'CircleX', bg: 'bg-error/20', border: 'border-error/30' },
+  warning: { icon: 'TriangleAlert', bg: 'bg-warning/20', border: 'border-warning/30' },
   info: { icon: 'Info', bg: 'bg-primary/20', border: 'border-primary/30' },
 }
 
@@ -110,7 +136,9 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
   useEffect(() => {
     if (toast.duration) {
       const timer = setTimeout(onClose, toast.duration)
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+      }
     }
   }, [toast.duration, onClose])
 

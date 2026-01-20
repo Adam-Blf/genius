@@ -40,9 +40,7 @@ export function SwipeCard({ question, onSwipeLeft, onSwipeRight, isTop }: SwipeC
   const handleTap = () => {
     setIsFlipped(!isFlipped)
     // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10)
-    }
+    navigator.vibrate?.(10)
   }
 
   if (!isTop) {
@@ -69,7 +67,7 @@ export function SwipeCard({ question, onSwipeLeft, onSwipeRight, isTop }: SwipeC
         style={{ opacity: rightOverlayOpacity }}
       >
         <div className="flex flex-col items-center gap-2 text-success">
-          <Icon name="CheckCircle" className="size-12" />
+          <Icon name="CircleCheck" className="size-12" />
           <span className="text-xl font-bold">JE CONNAIS</span>
         </div>
       </motion.div>
@@ -78,7 +76,7 @@ export function SwipeCard({ question, onSwipeLeft, onSwipeRight, isTop }: SwipeC
       <motion.div
         className="absolute inset-4 cursor-grab active:cursor-grabbing perspective-1000"
         style={{ x, rotate, opacity }}
-        drag={isTop ? 'x' : false}
+        drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.8}
         onDragEnd={handleDragEnd}

@@ -2,9 +2,14 @@ import { useCallback, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SwipeCard, EmptyDeck } from './SwipeCard'
 import { questions } from '@/data/questions'
-import { useStore, useCurrentDeck, useCurrentIndex, useSelectedCategories, useHapticEnabled, useSoundEnabled } from '@/store'
+import {
+  useStore,
+  useCurrentDeck,
+  useCurrentIndex,
+  useSelectedCategories,
+  useHapticEnabled,
+} from '@/store'
 import { Button, Icon, ProgressBar } from '@/components/atoms'
-import type { Category } from '@/types'
 
 interface SwipeDeckProps {
   onSessionComplete?: () => void
@@ -17,7 +22,6 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
   const currentIndex = useCurrentIndex()
   const selectedCategories = useSelectedCategories()
   const hapticEnabled = useHapticEnabled()
-  const soundEnabled = useSoundEnabled()
 
   const setDeck = useStore((s) => s.setDeck)
   const nextCard = useStore((s) => s.nextCard)
@@ -42,11 +46,14 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
   }, [currentDeck, currentIndex])
 
   // Haptic feedback
-  const triggerHaptic = useCallback((intensity: number = 10) => {
-    if (hapticEnabled && navigator.vibrate) {
-      navigator.vibrate(intensity)
-    }
-  }, [hapticEnabled])
+  const triggerHaptic = useCallback(
+    (intensity = 10) => {
+      if (hapticEnabled) {
+        navigator.vibrate?.(intensity)
+      }
+    },
+    [hapticEnabled]
+  )
 
   // Handle swipe right (Known)
   const handleSwipeRight = useCallback(() => {
@@ -54,7 +61,7 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
 
     triggerHaptic(20)
     markAsKnown(currentQuestion.id)
-    addXp(10, currentQuestion.category as Category)
+    addXp(10, currentQuestion.category)
     updateStreak()
     nextCard()
     onCardChange?.()
@@ -63,7 +70,18 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
     if (currentIndex + 1 >= currentDeck.length) {
       onSessionComplete?.()
     }
-  }, [currentQuestion, currentIndex, currentDeck.length, markAsKnown, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete, onCardChange])
+  }, [
+    currentQuestion,
+    currentIndex,
+    currentDeck.length,
+    markAsKnown,
+    addXp,
+    updateStreak,
+    nextCard,
+    triggerHaptic,
+    onSessionComplete,
+    onCardChange,
+  ])
 
   // Handle swipe left (Learn)
   const handleSwipeLeft = useCallback(() => {
@@ -71,7 +89,7 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
 
     triggerHaptic(30)
     markAsLearned(currentQuestion.id)
-    addXp(20, currentQuestion.category as Category) // More XP for learning
+    addXp(20, currentQuestion.category) // More XP for learning
     updateStreak()
     nextCard()
     onCardChange?.()
@@ -80,12 +98,23 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
     if (currentIndex + 1 >= currentDeck.length) {
       onSessionComplete?.()
     }
-  }, [currentQuestion, currentIndex, currentDeck.length, markAsLearned, addXp, updateStreak, nextCard, triggerHaptic, onSessionComplete, onCardChange])
+  }, [
+    currentQuestion,
+    currentIndex,
+    currentDeck.length,
+    markAsLearned,
+    addXp,
+    updateStreak,
+    nextCard,
+    triggerHaptic,
+    onSessionComplete,
+    onCardChange,
+  ])
 
   // Refresh deck
   const refreshDeck = useCallback(() => {
     const available = questions.filter(
-      (q) => selectedCategories.length === 0 || selectedCategories.includes(q.category as Category)
+      (q) => selectedCategories.length === 0 || selectedCategories.includes(q.category)
     )
     const shuffled = [...available].sort(() => Math.random() - 0.5)
     setDeck(shuffled.slice(0, 20).map((q) => q.id))
@@ -106,7 +135,9 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
       {/* Progress bar */}
       <div className="px-4 py-2">
         <div className="flex items-center justify-between text-xs text-text-muted mb-1">
-          <span>{currentIndex} / {currentDeck.length}</span>
+          <span>
+            {currentIndex} / {currentDeck.length}
+          </span>
           <span>{Math.round(progress)}%</span>
         </div>
         <ProgressBar value={progress} size="sm" variant="gradient" />
@@ -124,8 +155,8 @@ export function SwipeDeck({ onSessionComplete, onCardChange }: SwipeDeckProps) {
                 <SwipeCard
                   key={`next-${nextQuestion.id}`}
                   question={nextQuestion}
-                  onSwipeLeft={() => {}}
-                  onSwipeRight={() => {}}
+                  onSwipeLeft={Function.prototype as () => void}
+                  onSwipeRight={Function.prototype as () => void}
                   isTop={false}
                 />
               )}

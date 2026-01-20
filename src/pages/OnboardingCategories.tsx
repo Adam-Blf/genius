@@ -35,9 +35,7 @@ export function OnboardingCategories() {
 
       {/* Content */}
       <div className="flex-1">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">
-          Qu'est-ce qui t'intéresse ?
-        </h1>
+        <h1 className="text-2xl font-bold text-text-primary mb-2">Qu'est-ce qui t'intéresse ?</h1>
         <p className="text-text-secondary mb-8">
           Choisis au moins 1 catégorie. Tu pourras changer plus tard.
         </p>
@@ -51,7 +49,9 @@ export function OnboardingCategories() {
             return (
               <button
                 key={category}
-                onClick={() => handleToggle(category)}
+                onClick={() => {
+                  handleToggle(category)
+                }}
                 className={cn(
                   'flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all duration-fast',
                   'active:scale-[0.97]',
@@ -87,7 +87,8 @@ export function OnboardingCategories() {
           icon="Sparkles"
           iconPosition="right"
         >
-          C'est parti ! ({selectedCategories.length} sélectionnée{selectedCategories.length > 1 ? 's' : ''})
+          C'est parti ! ({selectedCategories.length} sélectionnée
+          {selectedCategories.length > 1 ? 's' : ''})
         </Button>
       </div>
     </div>

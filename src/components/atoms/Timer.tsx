@@ -47,7 +47,9 @@ export function Timer({
       })
     }, 1000)
 
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+    }
   }, [isRunning, onTimeUp, timeLeft])
 
   // Format time display
@@ -124,8 +126,12 @@ export function useTimer(duration: number, onTimeUp: () => void) {
   const [timeLeft, setTimeLeft] = useState(duration)
   const [isPaused, setIsPaused] = useState(true)
 
-  const start = useCallback(() => setIsPaused(false), [])
-  const pause = useCallback(() => setIsPaused(true), [])
+  const start = useCallback(() => {
+    setIsPaused(false)
+  }, [])
+  const pause = useCallback(() => {
+    setIsPaused(true)
+  }, [])
   const reset = useCallback(() => {
     setTimeLeft(duration)
     setIsPaused(true)
@@ -144,7 +150,9 @@ export function useTimer(duration: number, onTimeUp: () => void) {
       })
     }, 1000)
 
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+    }
   }, [isPaused, onTimeUp, timeLeft])
 
   return {

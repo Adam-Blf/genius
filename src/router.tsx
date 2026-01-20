@@ -12,15 +12,9 @@ const OnboardingName = lazy(() =>
 const OnboardingCategories = lazy(() =>
   import('@/pages/OnboardingCategories').then((m) => ({ default: m.OnboardingCategories }))
 )
-const Swipe = lazy(() =>
-  import('@/pages/Swipe').then((m) => ({ default: m.Swipe }))
-)
-const Stats = lazy(() =>
-  import('@/pages/Stats').then((m) => ({ default: m.Stats }))
-)
-const Settings = lazy(() =>
-  import('@/pages/Settings').then((m) => ({ default: m.Settings }))
-)
+const Swipe = lazy(() => import('@/pages/Swipe').then((m) => ({ default: m.Swipe })))
+const Stats = lazy(() => import('@/pages/Stats').then((m) => ({ default: m.Stats })))
+const Settings = lazy(() => import('@/pages/Settings').then((m) => ({ default: m.Settings })))
 
 // Loading fallback
 function PageLoader() {
@@ -35,7 +29,7 @@ function PageLoader() {
 }
 
 // Wrap lazy components with Suspense
-function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
+function withSuspense(Component: React.LazyExoticComponent<() => React.JSX.Element>) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Component />

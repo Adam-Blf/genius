@@ -29,9 +29,7 @@ export function OnboardingName() {
 
       {/* Content */}
       <div className="flex-1 flex flex-col">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">
-          Comment tu t'appelles ?
-        </h1>
+        <h1 className="text-2xl font-bold text-text-primary mb-2">Comment tu t'appelles ?</h1>
         <p className="text-text-secondary mb-8">
           On personnalisera ton expérience. Tu peux aussi passer cette étape.
         </p>
@@ -39,7 +37,9 @@ export function OnboardingName() {
         <Input
           placeholder="Ton prénom"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value)
+          }}
           icon="User"
           autoFocus
           className="mb-4"
@@ -58,12 +58,7 @@ export function OnboardingName() {
           Continuer
         </Button>
 
-        <Button
-          variant="ghost"
-          size="lg"
-          className="w-full"
-          onClick={handleSkip}
-        >
+        <Button variant="ghost" size="lg" className="w-full" onClick={handleSkip}>
           Passer
         </Button>
       </div>

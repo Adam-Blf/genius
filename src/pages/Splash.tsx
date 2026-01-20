@@ -15,7 +15,9 @@ export function Splash() {
       }
     }, 2000)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+    }
   }, [navigate, onboardingCompleted])
 
   return (

@@ -99,7 +99,14 @@ export function Stats() {
 
       {/* Badges */}
       <Card className="mb-4">
-        <CardHeader title="Badges" subtitle={`${badgeStats.totalCards > 0 ? 'Continue pour en débloquer !' : 'Swipe pour débloquer des badges'}`} />
+        <CardHeader
+          title="Badges"
+          subtitle={
+            badgeStats.totalCards > 0
+              ? 'Continue pour en débloquer !'
+              : 'Swipe pour débloquer des badges'
+          }
+        />
         <CardContent>
           <BadgeGrid stats={badgeStats} showLocked={true} />
         </CardContent>

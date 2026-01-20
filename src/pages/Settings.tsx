@@ -3,7 +3,14 @@ import { useState } from 'react'
 import { Icon } from '@/components/atoms'
 import { Card, ConfirmModal, useToast } from '@/components/molecules'
 import { TabBar } from '@/components/organisms'
-import { useStore, useSoundEnabled, useHapticEnabled, useUserName, useTotalXp, useTotalStats } from '@/store'
+import {
+  useStore,
+  useSoundEnabled,
+  useHapticEnabled,
+  useUserName,
+  useTotalXp,
+  useTotalStats,
+} from '@/store'
 import { exportUserData, downloadJSON } from '@/lib/export-data'
 
 export function Settings() {
@@ -130,7 +137,12 @@ export function Settings() {
         </div>
       </Card>
 
-      <Card className="mb-2" onClick={() => setShowResetModal(true)}>
+      <Card
+        className="mb-2"
+        onClick={() => {
+          setShowResetModal(true)
+        }}
+      >
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-xl bg-error/20 flex items-center justify-center">
             <Icon name="Trash2" className="size-5 text-error" />
@@ -160,14 +172,14 @@ export function Settings() {
         </div>
       </Card>
 
-      <p className="text-center text-xs text-text-muted mt-6">
-        Fait avec ❤️ par Adam Beloucif
-      </p>
+      <p className="text-center text-xs text-text-muted mt-6">Fait avec ❤️ par Adam Beloucif</p>
 
       {/* Reset Confirmation Modal */}
       <ConfirmModal
         isOpen={showResetModal}
-        onClose={() => setShowResetModal(false)}
+        onClose={() => {
+          setShowResetModal(false)
+        }}
         onConfirm={handleReset}
         title="Réinitialiser ?"
         message="Toutes tes données seront supprimées : progression, XP, badges. Cette action est irréversible."

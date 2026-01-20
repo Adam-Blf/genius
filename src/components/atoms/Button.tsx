@@ -47,7 +47,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const isDisabled = disabled || loading
+    const isDisabled = disabled === true || loading
 
     return (
       <button
@@ -70,7 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <Icon name="Loader2" className="animate-spin" />
+          <Icon name="LoaderCircle" className="animate-spin" />
         ) : (
           <>
             {icon && iconPosition === 'left' && <Icon name={icon} className="size-4" />}

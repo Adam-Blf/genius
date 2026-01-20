@@ -1,11 +1,22 @@
 import { useEffect, useCallback, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useStore, useOnboardingCompleted, useAvailableQuestions, useUserName, useReviewQueue } from '@/store'
+import {
+  useStore,
+  useOnboardingCompleted,
+  useAvailableQuestions,
+  useUserName,
+  useReviewQueue,
+} from '@/store'
 import { SwipeDeck, TabBar } from '@/components/organisms'
-import { useToast, ModeSelector, DifficultyFilter, type GameMode, type DifficultyFilterType } from '@/components/molecules'
-import { Timer, Icon } from '@/components/atoms'
+import {
+  useToast,
+  ModeSelector,
+  DifficultyFilter,
+  type GameMode,
+  type DifficultyFilterType,
+} from '@/components/molecules'
+import { Timer } from '@/components/atoms'
 import { questions } from '@/data/questions'
-import type { Difficulty } from '@/types'
 
 // Hardcore mode timer duration (seconds)
 const HARDCORE_TIME = 10
@@ -28,7 +39,7 @@ export function Swipe() {
   // Redirect if not onboarded
   useEffect(() => {
     if (!onboardingCompleted) {
-      navigate('/welcome', { replace: true })
+      void navigate('/welcome', { replace: true })
     }
   }, [onboardingCompleted, navigate])
 
@@ -59,27 +70,32 @@ export function Swipe() {
     } else {
       setDeck([])
     }
+  }, [getQuestionsForMode, setDeck])
 
-    // Start/stop hardcore timer
+  // Handle hardcore timer state based on game mode
+  useEffect(() => {
     if (gameMode === 'hardcore') {
       setHardcoreTimer(HARDCORE_TIME)
       setIsHardcorePaused(false)
     } else {
       setIsHardcorePaused(true)
     }
-  }, [gameMode, difficultyFilter, getQuestionsForMode, setDeck])
+  }, [gameMode])
 
   // Handle mode change
-  const handleModeChange = useCallback((mode: GameMode) => {
-    setGameMode(mode)
-    if (mode === 'review' && reviewQueue.length === 0) {
-      toast.info('Pas de cartes à réviser pour le moment')
-      return
-    }
-    if (mode === 'hardcore') {
-      toast.warning('Mode Hardcore : réponds vite !')
-    }
-  }, [reviewQueue.length, toast])
+  const handleModeChange = useCallback(
+    (mode: GameMode) => {
+      setGameMode(mode)
+      if (mode === 'review' && reviewQueue.length === 0) {
+        toast.info('Pas de cartes à réviser pour le moment')
+        return
+      }
+      if (mode === 'hardcore') {
+        toast.warning('Mode Hardcore : réponds vite !')
+      }
+    },
+    [reviewQueue.length, toast]
+  )
 
   // Handle hardcore time up
   const handleHardcoreTimeUp = useCallback(() => {
@@ -120,9 +136,7 @@ export function Swipe() {
           <h1 className="text-lg font-semibold text-text-primary">
             {userName ? `Salut ${userName} 👋` : 'Swipy'}
           </h1>
-          <p className="text-sm text-text-muted">
-            {questionsCount} questions disponibles
-          </p>
+          <p className="text-sm text-text-muted">{questionsCount} questions disponibles</p>
         </div>
 
         {/* Hardcore Timer */}
@@ -145,10 +159,7 @@ export function Swipe() {
         />
 
         {gameMode !== 'review' && (
-          <DifficultyFilter
-            current={difficultyFilter}
-            onChange={setDifficultyFilter}
-          />
+          <DifficultyFilter current={difficultyFilter} onChange={setDifficultyFilter} />
         )}
       </div>
 

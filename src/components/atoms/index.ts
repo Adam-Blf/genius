@@ -1,5 +1,5 @@
 // Atomic UI Components - Base building blocks
-export { Icon, CategoryIcon, categoryIcons } from './Icon'
+export { Icon, CategoryIcon } from './Icon'
 export type { IconName } from './Icon'
 
 export { Button } from './Button'

@@ -10,7 +10,7 @@ interface TabItem {
 
 const tabs: TabItem[] = [
   { path: '/swipe', icon: 'Layers', label: 'Swipe' },
-  { path: '/stats', icon: 'BarChart3', label: 'Stats' },
+  { path: '/stats', icon: 'ChartBar', label: 'Stats' },
   { path: '/settings', icon: 'Settings', label: 'Réglages' },
 ]
 
@@ -30,15 +30,10 @@ export function TabBar() {
               onClick={() => navigate(tab.path)}
               className={cn(
                 'flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors',
-                isActive
-                  ? 'text-primary'
-                  : 'text-text-muted hover:text-text-secondary'
+                isActive ? 'text-primary' : 'text-text-muted hover:text-text-secondary'
               )}
             >
-              <Icon
-                name={tab.icon}
-                className={cn('size-6', isActive && 'text-primary')}
-              />
+              <Icon name={tab.icon} className={cn('size-6', isActive && 'text-primary')} />
               <span className="text-xs font-medium">{tab.label}</span>
             </button>
           )

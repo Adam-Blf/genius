@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <div className="max-w-md text-center">
             {/* Error Icon */}
             <div className="size-20 mx-auto rounded-full bg-error/20 flex items-center justify-center mb-6">
-              <Icon name="AlertTriangle" className="size-10 text-error" />
+              <Icon name="TriangleAlert" className="size-10 text-error" />
             </div>
 
             {/* Error Message */}
@@ -86,14 +86,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 Réessayer
               </Button>
               <Button variant="secondary" onClick={this.handleGoHome}>
-                <Icon name="Home" className="size-4 mr-2" />
+                <Icon name="House" className="size-4 mr-2" />
                 Accueil
               </Button>
             </div>
 
             {/* Help text */}
             <p className="text-xs text-text-muted mt-6">
-              Si le problème persiste, essaie de rafraîchir la page ou de vider le cache du navigateur.
+              Si le problème persiste, essaie de rafraîchir la page ou de vider le cache du
+              navigateur.
             </p>
           </div>
         </div>
