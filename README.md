@@ -1,8 +1,9 @@
 # Swipy
 
-![Progress](https://img.shields.io/badge/Progress-90%2F103-blue)
-![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Status](https://img.shields.io/badge/Status-Released-success)
 ![PWA](https://img.shields.io/badge/PWA-Ready-green)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Description
 
@@ -53,7 +54,19 @@ Voir [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) pour le détail des 103 phases.
 
 ## Changelog
 
+### v1.0.0 - 2026-01-20
+
+**Release initiale**
+
+- Phase 91-103: SHIP
+  - GitHub Actions CI workflow
+  - CONTRIBUTING.md guidelines
+  - Production build optimisé
+  - PWA manifest et Service Worker
+  - Favicon SVG
+
 ### 2026-01-20
+
 - Phase 81-90: SETTINGS & POLISH complet
   - Page Settings redesignée avec sections
   - Export des données en JSON
