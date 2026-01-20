@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 9/103**
+**Progress: 10/103**
 
 ---
 
@@ -15,7 +15,7 @@
 - [x] **07. CSS** : Install Tailwind + Config.
 - [x] **08. Colors** : Theme Token "Dark Mode" (Variables CSS).
 - [x] **09. Typo** : Font Inter integration.
-- [ ] **10. Structure** : Folders (atoms, molecules, organisms).
+- [x] **10. Structure** : Folders (atoms, molecules, organisms).
 
 ## II. DATA CORE (11-20)
 
