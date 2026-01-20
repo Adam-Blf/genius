@@ -1,2 +1,2 @@
 // Custom React Hooks
-export {}
+export { useTheme } from './useTheme'

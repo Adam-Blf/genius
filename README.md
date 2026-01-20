@@ -1,6 +1,6 @@
 # Swipy
 
-![Progress](https://img.shields.io/badge/Progress-20%2F103-blue)
+![Progress](https://img.shields.io/badge/Progress-30%2F103-blue)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 ![PWA](https://img.shields.io/badge/PWA-Ready-green)
 
@@ -54,6 +54,10 @@ Voir [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) pour le détail des 103 phases.
 ## Changelog
 
 ### 2026-01-20
+- Phase 21-30: ATOMIC UI complet
+  - Composants atomiques (Icon, Button, Badge, Progress, Avatar, Input)
+  - Molécules (Card, Modal, Toast)
+  - Theme toggle hook
 - Phase 11-20: DATA CORE complet
   - TypeScript interfaces (Question, User)
   - Zod validation schemas

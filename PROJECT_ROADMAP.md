@@ -1,6 +1,6 @@
 # PROJECT ROADMAP - Swipy
 
-**Progress: 20/103**
+**Progress: 30/103**
 
 ---
 
@@ -32,16 +32,16 @@
 
 ## III. ATOMIC UI (21-30)
 
-- [ ] **21. Atom** : Icon Wrapper (Lucide).
-- [ ] **22. Atom** : Button (Variants).
-- [ ] **23. Atom** : Badge Category.
-- [ ] **24. Atom** : ProgressBar.
-- [ ] **25. Atom** : Avatar Placeholder.
-- [ ] **26. Atom** : Input Text.
-- [ ] **27. Molecule** : Card Container.
-- [ ] **28. Molecule** : Modal Base.
-- [ ] **29. Molecule** : Toast Notification.
-- [ ] **30. System** : Theme Toggle Logic.
+- [x] **21. Atom** : Icon Wrapper (Lucide).
+- [x] **22. Atom** : Button (Variants).
+- [x] **23. Atom** : Badge Category.
+- [x] **24. Atom** : ProgressBar.
+- [x] **25. Atom** : Avatar Placeholder.
+- [x] **26. Atom** : Input Text.
+- [x] **27. Molecule** : Card Container.
+- [x] **28. Molecule** : Modal Base.
+- [x] **29. Molecule** : Toast Notification.
+- [x] **30. System** : Theme Toggle Logic.
 
 ## IV. ONBOARDING (31-40)
 
