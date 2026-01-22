@@ -1,15 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local')
-}
+// Supabase Configuration
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://hkeyhupurhkwfnaxcsmh.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrZXlodXB1cmhrd2ZuYXhjc21oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMDkxMjQsImV4cCI6MjA4NDU4NTEyNH0.QfjRA0p3tQShMVhgNgY6d0F2jedKb0PqxUjPKrurDb8'
 
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key',
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       autoRefreshToken: true,
