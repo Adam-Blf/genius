@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# Genius - Quiz Culture Generale PWA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![PWA](https://img.shields.io/badge/PWA-ready-blue)
 
-Currently, two official plugins are available:
+## Description
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale. Avec Ralph l'elephant bleu comme mascotte, les utilisateurs progressent a travers des quiz thematiques et gagnent de l'XP.
 
-## React Compiler
+## Demo
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Live**: https://genius-peach-two.vercel.app
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- [x] PWA avec Service Worker (fonctionne offline)
+- [x] Authentification Google OAuth via Supabase
+- [x] Mascotte Ralph animee (6 humeurs)
+- [x] Systeme de vies (5 coeurs, regeneration 30min)
+- [x] XP et systeme de streak
+- [x] Categories: Histoire, Sciences, Geographie, Arts, Sports, Divertissement
+- [x] Questions avec explications
+- [x] Leaderboard et classement
+- [x] Mode Premium (Stripe ready)
+- [ ] Ligues hebdomadaires
+- [ ] Systeme d'amis
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS v4
+- **Animations**: Framer Motion
+- **Auth/DB**: Supabase
+- **PWA**: VitePWA
+- **Icons**: Lucide React
+- **Deployment**: Vercel
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Installation
+
+```bash
+# Cloner le repo
+git clone https://github.com/Adam-Blf/genius.git
+cd genius
+
+# Installer les dependances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env.local
+# Editer .env.local avec vos credentials Supabase
+
+# Lancer en dev
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Configuration Supabase
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Creer un projet sur [supabase.com](https://supabase.com)
+2. Executer le schema SQL dans `supabase/schema.sql`
+3. Activer Google Auth dans Authentication > Providers
+4. Configurer les credentials dans `.env.local`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Structure du Projet
+
 ```
+src/
+  components/
+    ui/          # Composants UI reutilisables
+    layout/      # TopBar, BottomNav
+    ralph/       # Mascotte animee
+    lesson/      # Composants de quiz
+  contexts/      # AuthContext, GameContext
+  pages/         # Pages de l'app
+  services/      # Supabase, heartService
+  types/         # Types TypeScript
+  hooks/         # Custom hooks
+```
+
+## Changelog
+
+### 2025-01-22
+- Deploiement Vercel initial
+- Integration Supabase (schema complet)
+- PWA fonctionnelle avec offline support
+- Mascotte Ralph avec 6 animations
+- Systeme de quiz complet avec XP
+
+## Auteur
+
+Adam Beloucif
