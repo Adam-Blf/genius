@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-in%20development-yellow)
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
-![Version](https://img.shields.io/badge/version-2.0.0-green)
+![Version](https://img.shields.io/badge/version-2.1.0-green)
 
 ## Description
 
@@ -35,11 +35,21 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 - [x] Questions avec explications detaillees
 - [x] Mode Premium (Stripe ready)
 
+### Nouveautes v2.1 - Gamification
+- [x] **Persistance localStorage** - Toutes les flashcards sont sauvegardees localement
+- [x] **Systeme de gamification complet** - XP, niveaux, badges, streaks
+- [x] **13 badges a debloquer** - Common, Rare, Epic, Legendary
+- [x] **Objectifs quotidiens** - Cartes, XP, temps d'etude
+- [x] **Dashboard de progression** - Stats, graphique XP hebdo, historique
+- [x] **Micro-animations CSS** - Shine, pulse, float, shake effects
+- [x] **Popup XP** - Feedback visuel apres chaque session
+
 ### Coming Soon
 - [ ] Ligues hebdomadaires
 - [ ] Systeme d'amis
 - [ ] Mode hors-ligne pour flashcards
 - [ ] Export PDF des flashcards
+- [ ] Synchronisation Supabase
 
 ## Tech Stack
 
@@ -128,6 +138,19 @@ src/
 - Fallback: generation locale basique
 
 ## Changelog
+
+### 2025-01-22 - v2.1.0
+- **NEW**: Systeme de persistance ameliore avec localStorage v2
+- **NEW**: Gamification complete (XP, niveaux, badges, streaks)
+- **NEW**: 13 badges deblocables avec 4 niveaux de rarete
+- **NEW**: Objectifs quotidiens (cartes, XP, temps d'etude)
+- **NEW**: Page Profil avec dashboard complet (stats, badges, historique)
+- **NEW**: Graphique XP hebdomadaire
+- **NEW**: Popup XP apres session avec animation
+- **NEW**: Micro-animations CSS (shine, pulse, float, shake, fire)
+- **UPDATE**: FlashcardsPlayer utilise le nouveau store
+- **UPDATE**: NotesInput integre avec le systeme de gamification
+- **FIX**: Migration automatique des anciennes donnees
 
 ### 2025-01-22 - v2.0.0
 - **NEW**: Page Fun Facts avec swipe cards et API externe

@@ -14,16 +14,17 @@ import {
   Flame,
   Home,
   Plus,
-  Trash2
+  Trash2,
+  Zap,
+  Star,
+  Sparkles
 } from 'lucide-react'
 import { TopBar } from '../components/layout/TopBar'
 import { BottomNav } from '../components/layout/BottomNav'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
-import type { Flashcard, FlashcardSet } from './NotesInput'
-
-// Local storage key
-const FLASHCARD_SETS_KEY = 'genius_flashcard_sets'
+import { useFlashcards } from '../contexts/FlashcardContext'
+import type { Flashcard, FlashcardSet } from '../types/flashcards'
 
 // Shuffle array
 function shuffleArray<T>(array: T[]): T[] {
@@ -33,6 +34,56 @@ function shuffleArray<T>(array: T[]): T[] {
     [newArray[i], newArray[j]] = [newArray[j], newArray[i]]
   }
   return newArray
+}
+
+// XP Popup Component
+function XpPopup({ xp, onComplete }: { xp: number; onComplete: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 2000)
+    return () => clearTimeout(timer)
+  }, [onComplete])
+
+  return (
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0, opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ y: 50 }}
+        animate={{ y: 0 }}
+        className="text-center"
+      >
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, -5, 5, 0]
+          }}
+          transition={{ duration: 0.5, repeat: 2 }}
+          className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/50"
+        >
+          <Zap className="w-12 h-12 text-white" />
+        </motion.div>
+        <motion.h2
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-4xl font-bold text-white mb-2"
+        >
+          +{xp} XP
+        </motion.h2>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-amber-400"
+        >
+          Session terminee !
+        </motion.p>
+      </motion.div>
+    </motion.div>
+  )
 }
 
 // Single Flashcard Component
@@ -81,9 +132,17 @@ function FlashcardComponent({
               <span className="text-white/80 text-sm font-medium px-3 py-1 bg-white/20 rounded-full">
                 Question
               </span>
-              <span className="text-white/60 text-xs">
-                Touche pour voir la reponse
-              </span>
+              <div className="flex items-center gap-2">
+                {card.masteryLevel > 0 && (
+                  <span className="text-white/60 text-xs flex items-center gap-1">
+                    <Star className="w-3 h-3" />
+                    {card.masteryLevel}%
+                  </span>
+                )}
+                <span className="text-white/60 text-xs">
+                  Touche pour voir la reponse
+                </span>
+              </div>
             </div>
 
             <div className="flex-1 flex items-center justify-center">
@@ -93,7 +152,12 @@ function FlashcardComponent({
             </div>
 
             <div className="text-center">
-              <RotateCcw className="w-6 h-6 text-white/50 mx-auto animate-pulse" />
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <RotateCcw className="w-6 h-6 text-white/50 mx-auto" />
+              </motion.div>
             </div>
           </Card>
         </div>
@@ -123,17 +187,19 @@ function FlashcardComponent({
             {/* Result buttons */}
             <div className="flex items-center justify-center gap-4 mt-4" onClick={(e) => e.stopPropagation()}>
               <motion.button
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onResult(false)}
-                className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-6 py-3 rounded-xl font-medium transition-colors"
+                className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-6 py-3 rounded-xl font-medium transition-all border border-red-500/30"
               >
                 <X className="w-5 h-5" />
                 Revoir
               </motion.button>
               <motion.button
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onResult(true)}
-                className="flex items-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 px-6 py-3 rounded-xl font-medium transition-colors"
+                className="flex items-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 px-6 py-3 rounded-xl font-medium transition-all border border-green-500/30"
               >
                 <Check className="w-5 h-5" />
                 Maitrise
@@ -152,6 +218,8 @@ function ResultsScreen({
   incorrect,
   total,
   timeSpent,
+  xpEarned,
+  streakMaintained,
   onRestart,
   onGoHome,
   onReviewMistakes
@@ -160,6 +228,8 @@ function ResultsScreen({
   incorrect: number
   total: number
   timeSpent: number
+  xpEarned: number
+  streakMaintained: boolean
   onRestart: () => void
   onGoHome: () => void
   onReviewMistakes: () => void
@@ -167,6 +237,7 @@ function ResultsScreen({
   const percentage = Math.round((correct / total) * 100)
   const minutes = Math.floor(timeSpent / 60)
   const seconds = timeSpent % 60
+  const isPerfect = incorrect === 0
 
   const getMessage = () => {
     if (percentage >= 90) return { text: 'Excellent !', emoji: '/ralph.png' }
@@ -193,7 +264,40 @@ function ResultsScreen({
       />
 
       <h1 className="text-3xl font-bold text-white mb-2">{message.text}</h1>
+
+      {/* Perfect badge */}
+      {isPerfect && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.3, type: 'spring' }}
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full mb-4"
+        >
+          <Sparkles className="w-5 h-5" />
+          Session Parfaite !
+        </motion.div>
+      )}
+
       <p className="text-gray-400 mb-6">Session terminee</p>
+
+      {/* XP Earned */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="flex items-center justify-center gap-2 mb-6"
+      >
+        <div className="bg-amber-500/20 text-amber-400 px-4 py-2 rounded-full flex items-center gap-2">
+          <Zap className="w-5 h-5" />
+          <span className="font-bold text-xl">+{xpEarned} XP</span>
+        </div>
+        {streakMaintained && (
+          <div className="bg-orange-500/20 text-orange-400 px-4 py-2 rounded-full flex items-center gap-2">
+            <Flame className="w-5 h-5" />
+            <span className="font-bold">Streak !</span>
+          </div>
+        )}
+      </motion.div>
 
       {/* Score Circle */}
       <div className="relative w-40 h-40 mx-auto mb-6">
@@ -285,8 +389,15 @@ function ResultsScreen({
 export function FlashcardsPlayerPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const {
+    sets,
+    deleteSet,
+    recordSession,
+    updateCardMastery,
+    gamification,
+    isLoaded
+  } = useFlashcards()
 
-  const [sets, setSets] = useState<FlashcardSet[]>([])
   const [selectedSet, setSelectedSet] = useState<FlashcardSet | null>(null)
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -295,21 +406,21 @@ export function FlashcardsPlayerPage() {
   const [isComplete, setIsComplete] = useState(false)
   const [startTime, setStartTime] = useState<number>(0)
   const [timeSpent, setTimeSpent] = useState(0)
+  const [xpEarned, setXpEarned] = useState(0)
+  const [showXpPopup, setShowXpPopup] = useState(false)
 
-  // Load sets from localStorage
+  // Load set from navigation state or URL
   useEffect(() => {
-    const savedSets = JSON.parse(localStorage.getItem(FLASHCARD_SETS_KEY) || '[]')
-    setSets(savedSets)
+    if (!isLoaded) return
 
-    // Check if navigated with a specific set
     const stateSetId = (location.state as any)?.setId
     if (stateSetId) {
-      const set = savedSets.find((s: FlashcardSet) => s.id === stateSetId)
+      const set = sets.find(s => s.id === stateSetId)
       if (set) {
         startSession(set)
       }
     }
-  }, [location.state])
+  }, [location.state, sets, isLoaded])
 
   const startSession = useCallback((set: FlashcardSet) => {
     setSelectedSet(set)
@@ -319,6 +430,7 @@ export function FlashcardsPlayerPage() {
     setResults([])
     setIsComplete(false)
     setStartTime(Date.now())
+    setXpEarned(0)
   }, [])
 
   const handleFlip = () => {
@@ -329,13 +441,40 @@ export function FlashcardsPlayerPage() {
     const currentCard = currentCards[currentIndex]
     setResults(prev => [...prev, { cardId: currentCard.id, correct }])
 
+    // Update card mastery
+    if (selectedSet) {
+      updateCardMastery(selectedSet.id, currentCard.id, correct)
+    }
+
     // Next card
     if (currentIndex < currentCards.length - 1) {
       setCurrentIndex(prev => prev + 1)
       setIsFlipped(false)
     } else {
       // Session complete
-      setTimeSpent(Math.floor((Date.now() - startTime) / 1000))
+      const duration = Math.floor((Date.now() - startTime) / 1000)
+      setTimeSpent(duration)
+
+      const correctCount = results.filter(r => r.correct).length + (correct ? 1 : 0)
+      const incorrectCount = results.filter(r => !r.correct).length + (correct ? 0 : 1)
+
+      // Record session and get XP
+      if (selectedSet) {
+        const earnedXp = recordSession({
+          setId: selectedSet.id,
+          setTitle: selectedSet.title,
+          startedAt: new Date(startTime).toISOString(),
+          completedAt: new Date().toISOString(),
+          cardsStudied: currentCards.length,
+          cardsCorrect: correctCount,
+          cardsIncorrect: incorrectCount,
+          duration,
+          streakMaintained: gamification.currentStreak > 0
+        })
+        setXpEarned(earnedXp)
+        setShowXpPopup(true)
+      }
+
       setIsComplete(true)
     }
   }
@@ -358,22 +497,42 @@ export function FlashcardsPlayerPage() {
     setResults([])
     setIsComplete(false)
     setStartTime(Date.now())
+    setXpEarned(0)
   }
 
   const handleDeleteSet = (setId: string) => {
     if (confirm('Supprimer ce set de flashcards ?')) {
-      const newSets = sets.filter(s => s.id !== setId)
-      setSets(newSets)
-      localStorage.setItem(FLASHCARD_SETS_KEY, JSON.stringify(newSets))
+      deleteSet(setId)
     }
   }
 
   const correctCount = results.filter(r => r.correct).length
   const incorrectCount = results.filter(r => !r.correct).length
 
+  // Loading state
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-genius-bg flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        >
+          <Brain className="w-12 h-12 text-primary-400" />
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-genius-bg pb-20 pt-16">
       <TopBar />
+
+      {/* XP Popup */}
+      <AnimatePresence>
+        {showXpPopup && (
+          <XpPopup xp={xpEarned} onComplete={() => setShowXpPopup(false)} />
+        )}
+      </AnimatePresence>
 
       <div className="p-4 max-w-lg mx-auto">
         {!selectedSet ? (
@@ -382,20 +541,62 @@ export function FlashcardsPlayerPage() {
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="flex items-center gap-3 mb-6"
+              className="flex items-center justify-between mb-6"
             >
-              <motion.img
-                src="/ralph.png"
-                alt="Ralph"
-                className="w-12 h-12 object-contain"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div>
-                <h1 className="text-xl font-bold text-white">Flashcards</h1>
-                <p className="text-gray-400 text-sm">Choisis un set a reviser</p>
+              <div className="flex items-center gap-3">
+                <motion.img
+                  src="/ralph.png"
+                  alt="Ralph"
+                  className="w-12 h-12 object-contain"
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <div>
+                  <h1 className="text-xl font-bold text-white">Flashcards</h1>
+                  <p className="text-gray-400 text-sm">Choisis un set a reviser</p>
+                </div>
               </div>
+
+              {/* Streak indicator */}
+              {gamification.currentStreak > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="flex items-center gap-1 bg-orange-500/20 text-orange-400 px-3 py-1.5 rounded-full"
+                >
+                  <Flame className="w-4 h-4" />
+                  <span className="font-bold text-sm">{gamification.currentStreak}j</span>
+                </motion.div>
+              )}
             </motion.div>
+
+            {/* Daily progress */}
+            {gamification.dailyGoal.cardsToReview > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6"
+              >
+                <Card variant="default" padding="md">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-400 text-sm">Objectif du jour</span>
+                    <span className="text-primary-400 text-sm font-medium">
+                      {gamification.dailyGoal.cardsReviewed}/{gamification.dailyGoal.cardsToReview} cartes
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <motion.div
+                      className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{
+                        width: `${Math.min(100, (gamification.dailyGoal.cardsReviewed / gamification.dailyGoal.cardsToReview) * 100)}%`
+                      }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                </Card>
+              </motion.div>
+            )}
 
             {sets.length === 0 ? (
               <motion.div
@@ -438,9 +639,16 @@ export function FlashcardsPlayerPage() {
                             <h3 className="font-semibold text-white truncate pr-8">
                               {set.title}
                             </h3>
-                            <p className="text-sm text-gray-400 mt-1">
-                              {set.cards.length} cartes
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-sm text-gray-400">
+                                {set.cards.length} cartes
+                              </p>
+                              {set.totalReviews > 0 && (
+                                <span className="text-xs text-primary-400">
+                                  {set.totalReviews} revisions
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-500 mt-1">
                               Cree le {new Date(set.createdAt).toLocaleDateString('fr-FR')}
                             </p>
@@ -480,6 +688,8 @@ export function FlashcardsPlayerPage() {
             incorrect={incorrectCount}
             total={currentCards.length}
             timeSpent={timeSpent}
+            xpEarned={xpEarned}
+            streakMaintained={gamification.currentStreak > 0}
             onRestart={handleRestart}
             onGoHome={() => setSelectedSet(null)}
             onReviewMistakes={handleReviewMistakes}
@@ -495,7 +705,7 @@ export function FlashcardsPlayerPage() {
             >
               <button
                 onClick={() => setSelectedSet(null)}
-                className="p-2 hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-2 hover:bg-slate-800 rounded-xl transition-colors active:scale-95"
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
@@ -517,7 +727,7 @@ export function FlashcardsPlayerPage() {
             </motion.div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-slate-800 rounded-full h-2 mb-6">
+            <div className="w-full bg-slate-800 rounded-full h-2 mb-6 overflow-hidden">
               <motion.div
                 className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full"
                 initial={{ width: 0 }}

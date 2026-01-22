@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   Settings,
@@ -10,7 +11,15 @@ import {
   ChevronRight,
   Zap,
   Flame,
-  Heart
+  Heart,
+  Award,
+  TrendingUp,
+  Clock,
+  Brain,
+  Star,
+  Lock,
+  CheckCircle,
+  BarChart3
 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -18,36 +27,159 @@ import { Badge } from '../components/ui/Badge'
 import { TopBar } from '../components/layout/TopBar'
 import { BottomNav } from '../components/layout/BottomNav'
 import { useAuth } from '../contexts/AuthContext'
+import { useFlashcards } from '../contexts/FlashcardContext'
 import { formatNumber } from '../lib/utils'
+import { calculateLevel } from '../types/flashcards'
+
+// Badge display component
+function BadgeItem({ badge, isLocked }: { badge: any; isLocked: boolean }) {
+  const rarityColors = {
+    common: 'from-gray-500 to-gray-600',
+    rare: 'from-blue-500 to-indigo-600',
+    epic: 'from-purple-500 to-pink-600',
+    legendary: 'from-amber-500 to-orange-600'
+  }
+
+  const rarityBorders = {
+    common: 'border-gray-500/30',
+    rare: 'border-blue-500/30',
+    epic: 'border-purple-500/30',
+    legendary: 'border-amber-500/30'
+  }
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`relative p-3 rounded-xl border ${rarityBorders[badge.rarity as keyof typeof rarityBorders]} ${
+        isLocked ? 'opacity-50 grayscale' : ''
+      }`}
+    >
+      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${rarityColors[badge.rarity as keyof typeof rarityColors]} flex items-center justify-center text-2xl mx-auto mb-2 shadow-lg`}>
+        {isLocked ? <Lock className="w-5 h-5 text-white/50" /> : badge.icon}
+      </div>
+      <p className="text-xs text-center text-white font-medium truncate">{badge.name}</p>
+      {!isLocked && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"
+        >
+          <CheckCircle className="w-3 h-3 text-white" />
+        </motion.div>
+      )}
+      {isLocked && (
+        <div className="text-[10px] text-gray-500 text-center mt-1">
+          {badge.progress}/{badge.requirement}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
+// Weekly XP Chart
+function WeeklyXpChart({ data }: { data: number[] }) {
+  const maxXp = Math.max(...data, 1)
+  const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
+  const today = new Date().getDay()
+
+  return (
+    <div className="flex items-end justify-between gap-2 h-24">
+      {data.map((xp, index) => {
+        const height = (xp / maxXp) * 100
+        const isToday = index === today
+
+        return (
+          <div key={index} className="flex flex-col items-center gap-1 flex-1">
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: `${Math.max(height, 5)}%` }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              className={`w-full rounded-t-lg ${
+                isToday
+                  ? 'bg-gradient-to-t from-primary-500 to-secondary-500'
+                  : 'bg-slate-700'
+              }`}
+            />
+            <span className={`text-xs ${isToday ? 'text-primary-400 font-bold' : 'text-gray-500'}`}>
+              {days[index]}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Session history item
+function SessionItem({ session }: { session: any }) {
+  const percentage = Math.round((session.cardsCorrect / session.cardsStudied) * 100)
+  const date = new Date(session.completedAt)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl"
+    >
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+        percentage >= 80 ? 'bg-green-500/20 text-green-400' :
+        percentage >= 50 ? 'bg-amber-500/20 text-amber-400' :
+        'bg-red-500/20 text-red-400'
+      }`}>
+        {percentage >= 80 ? <Star className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white truncate">{session.setTitle}</p>
+        <p className="text-xs text-gray-500">
+          {date.toLocaleDateString('fr-FR')} - {session.cardsStudied} cartes
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="text-sm font-bold text-white">{percentage}%</p>
+        <p className="text-xs text-amber-400">+{session.xpEarned} XP</p>
+      </div>
+    </motion.div>
+  )
+}
 
 export function ProfilePage() {
   const navigate = useNavigate()
   const { profile, signOut } = useAuth()
+  const { gamification, stats, getRecentSessions, getUnlockedBadges, getNextBadges } = useFlashcards()
+  const [activeTab, setActiveTab] = useState<'stats' | 'badges' | 'history'>('stats')
 
-  const stats = [
+  const levelInfo = calculateLevel(gamification.totalXp)
+  const xpProgress = (levelInfo.xpInLevel / levelInfo.xpForNextLevel) * 100
+
+  const recentSessions = getRecentSessions(5)
+  const unlockedBadges = getUnlockedBadges()
+  const nextBadges = getNextBadges(3)
+
+  const mainStats = [
     {
       icon: <Zap className="w-5 h-5" />,
       label: 'XP Total',
-      value: formatNumber(profile?.xp_total || 0),
-      color: 'text-accent-400 bg-accent-500/20'
+      value: formatNumber(gamification.totalXp),
+      color: 'text-amber-400 bg-amber-500/20'
     },
     {
       icon: <Flame className="w-5 h-5" />,
-      label: 'Meilleure série',
-      value: `${profile?.longest_streak || 0}j`,
+      label: 'Serie actuelle',
+      value: `${gamification.currentStreak}j`,
       color: 'text-orange-400 bg-orange-500/20'
     },
     {
       icon: <Target className="w-5 h-5" />,
-      label: 'Leçons',
-      value: '12',
+      label: 'Cartes revisees',
+      value: formatNumber(gamification.totalCardsReviewed),
       color: 'text-green-400 bg-green-500/20'
     },
     {
       icon: <Trophy className="w-5 h-5" />,
-      label: 'Ligue',
-      value: 'Bronze',
-      color: 'text-amber-400 bg-amber-500/20'
+      label: 'Badges',
+      value: unlockedBadges.length.toString(),
+      color: 'text-purple-400 bg-purple-500/20'
     }
   ]
 
@@ -55,7 +187,7 @@ export function ProfilePage() {
     {
       icon: <Crown className="w-5 h-5 text-amber-400" />,
       label: 'Genius Plus',
-      description: 'Vies illimitées, sans pub',
+      description: 'Vies illimitees, sans pub',
       onClick: () => navigate('/premium'),
       badge: 'PRO'
     },
@@ -66,14 +198,8 @@ export function ProfilePage() {
       onClick: () => {}
     },
     {
-      icon: <Calendar className="w-5 h-5 text-blue-400" />,
-      label: 'Historique',
-      description: 'Voir tes performances',
-      onClick: () => {}
-    },
-    {
       icon: <Settings className="w-5 h-5 text-gray-400" />,
-      label: 'Paramètres',
+      label: 'Parametres',
       description: 'Notifications, langue, etc.',
       onClick: () => {}
     }
@@ -83,6 +209,12 @@ export function ProfilePage() {
     await signOut()
     navigate('/login')
   }
+
+  const tabs = [
+    { id: 'stats', label: 'Stats', icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'badges', label: 'Badges', icon: <Award className="w-4 h-4" /> },
+    { id: 'history', label: 'Historique', icon: <Clock className="w-4 h-4" /> }
+  ]
 
   return (
     <div className="min-h-screen bg-genius-bg pb-20 pt-16">
@@ -104,7 +236,7 @@ export function ProfilePage() {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                '🦸'
+                <img src="/ralph.png" alt="Ralph" className="w-20 h-20 object-contain" />
               )}
             </div>
             {profile?.is_premium && (
@@ -115,16 +247,51 @@ export function ProfilePage() {
           </div>
 
           <h1 className="text-2xl font-bold text-white mt-4">
-            {profile?.display_name || 'Génie'}
+            {profile?.display_name || 'Genie'}
           </h1>
           <p className="text-gray-400">@{profile?.username || 'genius_user'}</p>
 
-          {/* Current streak badge */}
-          <div className="flex justify-center mt-3">
-            <Badge variant="streak" size="md" icon={<Flame className="w-4 h-4" />}>
-              {profile?.current_streak || 0} jours de série
-            </Badge>
-          </div>
+          {/* Level and XP Progress */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-4 px-4"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{levelInfo.level}</span>
+                </div>
+                <span className="text-white font-semibold">Niveau {levelInfo.level}</span>
+              </div>
+              <span className="text-gray-400 text-sm">
+                {levelInfo.xpInLevel}/{levelInfo.xpForNextLevel} XP
+              </span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${xpProgress}%` }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full"
+              />
+            </div>
+          </motion.div>
+
+          {/* Streak badge */}
+          {gamification.currentStreak > 0 && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring' }}
+              className="flex justify-center mt-4"
+            >
+              <Badge variant="streak" size="md" icon={<Flame className="w-4 h-4" />}>
+                {gamification.currentStreak} jours de serie
+              </Badge>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Stats grid */}
@@ -134,23 +301,289 @@ export function ProfilePage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 gap-3 mb-6"
         >
-          {stats.map((stat, index) => (
-            <Card key={stat.label} variant="default" padding="md">
-              <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
-                {stat.icon}
-              </div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-xs text-gray-500">{stat.label}</p>
-            </Card>
+          {mainStats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+            >
+              <Card variant="default" padding="md">
+                <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
+                  {stat.icon}
+                </div>
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+              </Card>
+            </motion.div>
           ))}
         </motion.div>
+
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex gap-2 mb-4 bg-slate-800/50 p-1 rounded-xl"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-primary-500 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Tab content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'stats' && (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {/* Weekly XP */}
+              <Card variant="default" padding="md">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-primary-400" />
+                    XP Cette Semaine
+                  </h3>
+                  <span className="text-primary-400 font-bold">
+                    {gamification.weeklyXp.reduce((a, b) => a + b, 0)} XP
+                  </span>
+                </div>
+                <WeeklyXpChart data={gamification.weeklyXp} />
+              </Card>
+
+              {/* Daily Goal */}
+              <Card variant="default" padding="md">
+                <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-green-400" />
+                  Objectif du jour
+                </h3>
+                <div className="space-y-3">
+                  {/* Cards goal */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-gray-400 text-sm">Cartes revisees</span>
+                      <span className="text-white text-sm font-medium">
+                        {gamification.dailyGoal.cardsReviewed}/{gamification.dailyGoal.cardsToReview}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${Math.min(100, (gamification.dailyGoal.cardsReviewed / gamification.dailyGoal.cardsToReview) * 100)}%`
+                        }}
+                        className="h-2 rounded-full bg-green-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* XP goal */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-gray-400 text-sm">XP gagne</span>
+                      <span className="text-white text-sm font-medium">
+                        {gamification.dailyGoal.xpEarned}/{gamification.dailyGoal.xpToEarn}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${Math.min(100, (gamification.dailyGoal.xpEarned / gamification.dailyGoal.xpToEarn) * 100)}%`
+                        }}
+                        className="h-2 rounded-full bg-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Study time goal */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-gray-400 text-sm">Temps d'etude</span>
+                      <span className="text-white text-sm font-medium">
+                        {gamification.dailyGoal.minutesStudied}/{gamification.dailyGoal.minutesToStudy} min
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-700 rounded-full h-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${Math.min(100, (gamification.dailyGoal.minutesStudied / gamification.dailyGoal.minutesToStudy) * 100)}%`
+                        }}
+                        className="h-2 rounded-full bg-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {gamification.dailyGoal.completedAt && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="flex items-center justify-center gap-2 bg-green-500/20 text-green-400 py-2 rounded-lg"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Objectif atteint !
+                    </motion.div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Quick stats */}
+              <Card variant="default" padding="md">
+                <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-purple-400" />
+                  Statistiques
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-slate-800/50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-400">Sets crees</p>
+                    <p className="text-xl font-bold text-white">{stats.totalSets}</p>
+                  </div>
+                  <div className="bg-slate-800/50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-400">Cartes totales</p>
+                    <p className="text-xl font-bold text-white">{stats.totalCards}</p>
+                  </div>
+                  <div className="bg-slate-800/50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-400">Sessions parfaites</p>
+                    <p className="text-xl font-bold text-white">{gamification.perfectSessions}</p>
+                  </div>
+                  <div className="bg-slate-800/50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-400">Meilleure serie</p>
+                    <p className="text-xl font-bold text-white">{gamification.longestStreak}j</p>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === 'badges' && (
+            <motion.div
+              key="badges"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {/* Unlocked badges */}
+              {unlockedBadges.length > 0 && (
+                <Card variant="default" padding="md">
+                  <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-amber-400" />
+                    Badges debloques ({unlockedBadges.length})
+                  </h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {unlockedBadges.map((badge) => (
+                      <BadgeItem key={badge.id} badge={badge} isLocked={false} />
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* Next badges to unlock */}
+              {nextBadges.length > 0 && (
+                <Card variant="default" padding="md">
+                  <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    Prochains badges
+                  </h3>
+                  <div className="space-y-3">
+                    {nextBadges.map((badge) => (
+                      <div key={badge.id} className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl">
+                        <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-xl opacity-50">
+                          {badge.icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white font-medium">{badge.name}</p>
+                          <p className="text-xs text-gray-400">{badge.description}</p>
+                          <div className="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+                            <div
+                              className="h-1.5 rounded-full bg-primary-500"
+                              style={{ width: `${(badge.progress / badge.requirement) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-gray-400 text-sm">
+                          {badge.progress}/{badge.requirement}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {unlockedBadges.length === 0 && nextBadges.length === 0 && (
+                <div className="text-center py-8">
+                  <Award className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">Commence a reviser pour debloquer des badges !</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'history' && (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-3"
+            >
+              {recentSessions.length > 0 ? (
+                <>
+                  <h3 className="font-semibold text-white flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    Sessions recentes
+                  </h3>
+                  {recentSessions.map((session, index) => (
+                    <motion.div
+                      key={session.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <SessionItem session={session} />
+                    </motion.div>
+                  ))}
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Clock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">Aucune session pour l'instant</p>
+                  <Button
+                    onClick={() => navigate('/flashcards')}
+                    variant="primary"
+                    size="md"
+                    className="mt-4"
+                  >
+                    Commencer a reviser
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Menu items */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-2 mb-6"
+          transition={{ delay: 0.3 }}
+          className="space-y-2 mt-6 mb-6"
         >
           {menuItems.map((item, index) => (
             <Card
@@ -185,7 +618,7 @@ export function ProfilePage() {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
           <Button
             onClick={handleSignOut}
@@ -194,13 +627,13 @@ export function ProfilePage() {
             className="w-full text-red-400 border-red-500/30 hover:bg-red-500/10"
             leftIcon={<LogOut className="w-5 h-5" />}
           >
-            Déconnexion
+            Deconnexion
           </Button>
         </motion.div>
 
         {/* App version */}
         <p className="text-center text-xs text-gray-600 mt-6">
-          Genius v1.0.0 • Made with 💙 by Ralph
+          Genius v2.1.0 - Made with Ralph
         </p>
       </div>
 

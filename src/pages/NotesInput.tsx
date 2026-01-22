@@ -18,26 +18,11 @@ import { TopBar } from '../components/layout/TopBar'
 import { BottomNav } from '../components/layout/BottomNav'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
+import { useFlashcards } from '../contexts/FlashcardContext'
+import type { Flashcard } from '../types/flashcards'
 
-// Types
-export interface Flashcard {
-  id: string
-  question: string
-  answer: string
-  difficulty: 'easy' | 'medium' | 'hard'
-}
-
-export interface FlashcardSet {
-  id: string
-  title: string
-  description: string
-  cards: Flashcard[]
-  createdAt: Date
-  source: 'notes' | 'ai'
-}
-
-// Local storage key
-const FLASHCARD_SETS_KEY = 'genius_flashcard_sets'
+// Legacy exports for compatibility
+export type { Flashcard, FlashcardSet } from '../types/flashcards'
 
 // AI Service for generating flashcards
 async function generateFlashcardsWithAI(notes: string, apiKey: string | null): Promise<Flashcard[]> {
@@ -171,6 +156,7 @@ function generateFlashcardsLocally(notes: string): Flashcard[] {
 
 export function NotesInputPage() {
   const navigate = useNavigate()
+  const { addSet } = useFlashcards()
   const [notes, setNotes] = useState('')
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
@@ -214,22 +200,23 @@ export function NotesInputPage() {
   const handleSaveSet = useCallback(() => {
     if (generatedCards.length === 0) return
 
-    const newSet: FlashcardSet = {
-      id: `set-${Date.now()}`,
+    // Use the new store system
+    const setId = addSet({
       title: title || `Notes du ${new Date().toLocaleDateString('fr-FR')}`,
       description: `${generatedCards.length} flashcards generees a partir de vos notes`,
-      cards: generatedCards,
-      createdAt: new Date(),
+      cards: generatedCards.map(card => ({
+        ...card,
+        timesReviewed: 0,
+        timesCorrect: 0,
+        lastReviewedAt: null,
+        masteryLevel: 0
+      })),
       source: 'notes'
-    }
-
-    // Save to localStorage
-    const existingSets = JSON.parse(localStorage.getItem(FLASHCARD_SETS_KEY) || '[]')
-    localStorage.setItem(FLASHCARD_SETS_KEY, JSON.stringify([newSet, ...existingSets]))
+    })
 
     // Navigate to player
-    navigate('/flashcards', { state: { setId: newSet.id } })
-  }, [generatedCards, title, navigate])
+    navigate('/flashcards', { state: { setId } })
+  }, [generatedCards, title, navigate, addSet])
 
   const handleClear = () => {
     setNotes('')
