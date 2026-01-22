@@ -19,13 +19,20 @@ import { BottomNav } from '../components/layout/BottomNav'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useFlashcards } from '../contexts/FlashcardContext'
-import type { Flashcard } from '../types/flashcards'
+
+// Type for generated flashcards (before being added to store)
+interface GeneratedFlashcard {
+  id: string
+  question: string
+  answer: string
+  difficulty: 'easy' | 'medium' | 'hard'
+}
 
 // Legacy exports for compatibility
 export type { Flashcard, FlashcardSet } from '../types/flashcards'
 
 // AI Service for generating flashcards
-async function generateFlashcardsWithAI(notes: string, apiKey: string | null): Promise<Flashcard[]> {
+async function generateFlashcardsWithAI(notes: string, apiKey: string | null): Promise<GeneratedFlashcard[]> {
   // If no API key, use local generation
   if (!apiKey) {
     return generateFlashcardsLocally(notes)
@@ -92,8 +99,8 @@ async function generateFlashcardsWithAI(notes: string, apiKey: string | null): P
 }
 
 // Local flashcard generation (no AI required)
-function generateFlashcardsLocally(notes: string): Flashcard[] {
-  const flashcards: Flashcard[] = []
+function generateFlashcardsLocally(notes: string): GeneratedFlashcard[] {
+  const flashcards: GeneratedFlashcard[] = []
 
   // Split into sentences/paragraphs
   const sentences = notes
@@ -162,7 +169,7 @@ export function NotesInputPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [generatedCards, setGeneratedCards] = useState<Flashcard[]>([])
+  const [generatedCards, setGeneratedCards] = useState<GeneratedFlashcard[]>([])
   const [showApiKeyInput, setShowApiKeyInput] = useState(false)
   const [apiKey, setApiKey] = useState<string>('')
 
