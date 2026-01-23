@@ -106,7 +106,7 @@ export interface UserDataStore {
     streakReminders: boolean
     weeklyDigest: boolean
     language: 'fr' | 'en'
-    llmProvider?: 'groq' | 'together' | 'ollama' | 'openrouter' | 'none'
+    llmProvider?: 'huggingface' | 'groq' | 'together' | 'ollama' | 'openrouter' | 'none'
     llmApiKey?: string // Encrypted in storage
   }
 
