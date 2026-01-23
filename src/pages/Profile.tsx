@@ -29,16 +29,18 @@ import {
   Database,
   Sparkles,
   Download,
-  Upload
+  Upload,
+  Edit2
 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { TopBar } from '../components/layout/TopBar'
 import { BottomNav } from '../components/layout/BottomNav'
+import { FadeIn, SlideUp, StaggerContainer, StaggerItem, ScaleIn, Pop } from '../components/transitions/PageTransition'
 import { useFlashcards } from '../contexts/FlashcardContext'
 import { useUserData } from '../contexts/UserDataContext'
-import { formatNumber } from '../lib/utils'
+import { formatNumber, cn } from '../lib/utils'
 import { calculateLevel } from '../types/flashcards'
 
 // Profile Section Components
@@ -288,130 +290,223 @@ export function ProfilePage() {
       <TopBar />
 
       <div className="p-4 max-w-lg mx-auto">
-        {/* Profile header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-center mb-6"
-        >
-          <div className="relative inline-block">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-4xl">
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt="Avatar"
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : userData.profile.avatarEmoji ? (
-                <span className="text-5xl">{userData.profile.avatarEmoji}</span>
-              ) : (
-                <img src="/ralph.png" alt="Ralph" className="w-20 h-20 object-contain" />
-              )}
-            </div>
-            {profile?.is_premium && (
-              <div className="absolute -top-1 -right-1 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                <Crown className="w-5 h-5 text-white" />
+        {/* Profile header - Enhanced */}
+        <FadeIn>
+          <div className="text-center mb-6 relative">
+            {/* Background gradient effect */}
+            <div className="absolute inset-0 -top-16 bg-gradient-to-b from-primary-500/10 via-genius-cyan/5 to-transparent blur-3xl" />
+
+            <motion.div
+              className="relative inline-block"
+              whileHover={{ scale: 1.02 }}
+            >
+              {/* Animated ring around avatar */}
+              <motion.div
+                className="absolute -inset-2 rounded-full"
+                style={{
+                  background: 'linear-gradient(45deg, #0052D4, #4364F7, #6FB1FC, #00E5FF, #0052D4)',
+                  backgroundSize: '400% 400%'
+                }}
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              />
+              <div className="relative w-28 h-28 rounded-full bg-genius-bg p-1">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : userData.profile.avatarEmoji ? (
+                    <motion.span
+                      className="text-5xl"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      {userData.profile.avatarEmoji}
+                    </motion.span>
+                  ) : (
+                    <img src="/ralph.png" alt="Ralph" className="w-20 h-20 object-contain" />
+                  )}
+                </div>
               </div>
+
+              {/* Edit button */}
+              <motion.button
+                className="absolute bottom-0 right-0 w-9 h-9 bg-genius-cyan rounded-full flex items-center justify-center border-2 border-genius-bg shadow-lg"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate('/settings')}
+              >
+                <Edit2 className="w-4 h-4 text-white" />
+              </motion.button>
+
+              {/* Premium crown */}
+              {profile?.is_premium && (
+                <motion.div
+                  className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Crown className="w-5 h-5 text-white" />
+                </motion.div>
+              )}
+            </motion.div>
+
+            <motion.h1
+              className="text-2xl font-bold text-white mt-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {profile?.display_name || 'Genie'}
+            </motion.h1>
+            <motion.p
+              className="text-gray-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15 }}
+            >
+              @{profile?.username || 'genius_user'}
+            </motion.p>
+
+            {/* Level and XP Progress - Enhanced */}
+            <SlideUp delay={0.2}>
+              <div className="mt-5 px-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-genius-cyan flex items-center justify-center shadow-lg shadow-primary-500/30"
+                      animate={{ boxShadow: ['0 0 15px rgba(0, 82, 212, 0.3)', '0 0 25px rgba(0, 82, 212, 0.5)', '0 0 15px rgba(0, 82, 212, 0.3)'] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <span className="text-white font-bold">{levelInfo.level}</span>
+                    </motion.div>
+                    <span className="text-white font-semibold">Niveau {levelInfo.level}</span>
+                  </div>
+                  <span className="text-genius-cyan text-sm font-medium">
+                    {levelInfo.xpInLevel}/{levelInfo.xpForNextLevel} XP
+                  </span>
+                </div>
+
+                {/* Enhanced progress bar */}
+                <div className="relative">
+                  <div className="w-full bg-slate-700/80 rounded-full h-4 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${xpProgress}%` }}
+                      transition={{ duration: 0.8, delay: 0.3 }}
+                      className="h-full rounded-full relative overflow-hidden"
+                      style={{
+                        background: 'linear-gradient(90deg, #0052D4, #4364F7, #6FB1FC, #00E5FF)'
+                      }}
+                    >
+                      {/* Shimmer effect */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                        animate={{ x: ['-100%', '200%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                      />
+                    </motion.div>
+                  </div>
+
+                  {/* XP label inside bar */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white/80">{Math.round(xpProgress)}%</span>
+                  </div>
+                </div>
+              </div>
+            </SlideUp>
+
+            {/* Streak badge - Enhanced */}
+            {gamification.currentStreak > 0 && (
+              <Pop delay={0.3}>
+                <div className="flex justify-center mt-4">
+                  <motion.div
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30"
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <motion.div
+                      animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      <Flame className="w-5 h-5 text-orange-400" />
+                    </motion.div>
+                    <span className="text-orange-400 font-bold">{gamification.currentStreak} jours</span>
+                    <span className="text-orange-400/70 text-sm">de serie</span>
+                  </motion.div>
+                </div>
+              </Pop>
             )}
           </div>
+        </FadeIn>
 
-          <h1 className="text-2xl font-bold text-white mt-4">
-            {profile?.display_name || 'Genie'}
-          </h1>
-          <p className="text-gray-400">@{profile?.username || 'genius_user'}</p>
-
-          {/* Level and XP Progress */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mt-4 px-4"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">{levelInfo.level}</span>
-                </div>
-                <span className="text-white font-semibold">Niveau {levelInfo.level}</span>
-              </div>
-              <span className="text-gray-400 text-sm">
-                {levelInfo.xpInLevel}/{levelInfo.xpForNextLevel} XP
-              </span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${xpProgress}%` }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full"
-              />
-            </div>
-          </motion.div>
-
-          {/* Streak badge */}
-          {gamification.currentStreak > 0 && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring' }}
-              className="flex justify-center mt-4"
-            >
-              <Badge variant="streak" size="md" icon={<Flame className="w-4 h-4" />}>
-                {gamification.currentStreak} jours de serie
-              </Badge>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Stats grid */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 gap-3 mb-6"
-        >
+        {/* Stats grid - Enhanced */}
+        <StaggerContainer staggerDelay={0.08} className="grid grid-cols-2 gap-3 mb-6">
           {mainStats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + index * 0.05 }}
-            >
-              <Card variant="default" padding="md">
-                <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
+            <StaggerItem key={stat.label}>
+              <Card variant="default" padding="md" className="group relative overflow-hidden">
+                {/* Hover gradient overlay */}
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity",
+                  stat.color.replace('text-', 'bg-').replace('bg-', 'bg-gradient-to-br from-')
+                )} />
+
+                <motion.div
+                  className={`w-11 h-11 rounded-xl ${stat.color} flex items-center justify-center mb-2 relative`}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   {stat.icon}
-                </div>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                </motion.div>
+                <motion.p
+                  className="text-2xl font-bold text-white"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 + index * 0.05 }}
+                >
+                  {stat.value}
+                </motion.p>
                 <p className="text-xs text-gray-500">{stat.label}</p>
               </Card>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </motion.div>
+        </StaggerContainer>
 
-        {/* Tabs - Scrollable */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-4 overflow-x-auto scrollbar-hide"
-        >
-          <div className="flex gap-2 bg-slate-800/50 p-1 rounded-xl min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-primary-500 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+        {/* Tabs - Scrollable & Enhanced */}
+        <SlideUp delay={0.3}>
+          <div className="mb-4 overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-2 bg-genius-card/80 p-1.5 rounded-2xl min-w-max backdrop-blur-sm border border-genius-border/50">
+              {tabs.map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl font-medium text-sm transition-all whitespace-nowrap",
+                    activeTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-white'
+                  )}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="profileActiveTab"
+                      className="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    {tab.icon}
+                    {tab.label}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </motion.div>
+        </SlideUp>
 
         {/* Tab content */}
         <AnimatePresence mode="wait">
