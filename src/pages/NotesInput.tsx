@@ -11,7 +11,11 @@ import {
   ArrowRight,
   BookOpen,
   Brain,
-  Wand2
+  Wand2,
+  Zap,
+  GraduationCap,
+  Lightbulb,
+  Target
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { TopBar } from '../components/layout/TopBar'
@@ -19,6 +23,7 @@ import { BottomNav } from '../components/layout/BottomNav'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useFlashcards } from '../contexts/FlashcardContext'
+import { FadeIn, SlideUp, StaggerContainer, StaggerItem } from '../components/transitions'
 
 // Type for generated flashcards (before being added to store)
 interface GeneratedFlashcard {
@@ -160,6 +165,22 @@ function generateFlashcardsLocally(notes: string): GeneratedFlashcard[] {
   }]
 }
 
+// Difficulty badge component
+function DifficultyBadge({ difficulty }: { difficulty: 'easy' | 'medium' | 'hard' }) {
+  const config = {
+    easy: { label: 'Facile', color: 'from-[#00C853] to-[#69F0AE]', textColor: 'text-green-400' },
+    medium: { label: 'Moyen', color: 'from-[#FF9100] to-[#FFD180]', textColor: 'text-amber-400' },
+    hard: { label: 'Difficile', color: 'from-[#FF5252] to-[#FFAB91]', textColor: 'text-red-400' }
+  }
+  const { label, color, textColor } = config[difficulty]
+
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full bg-gradient-to-r ${color} bg-opacity-20 ${textColor} font-medium`}>
+      {label}
+    </span>
+  )
+}
+
 export function NotesInputPage() {
   const navigate = useNavigate()
   const { addSet } = useFlashcards()
@@ -246,231 +267,370 @@ export function NotesInputPage() {
       <TopBar />
 
       <div className="p-4 max-w-lg mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-3 mb-6"
-        >
-          <motion.img
-            src="/ralph.png"
-            alt="Ralph"
-            className="w-12 h-12 object-contain"
-            animate={{ rotate: [0, -5, 5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <div>
-            <h1 className="text-xl font-bold text-white">Revision</h1>
-            <p className="text-gray-400 text-sm">Colle tes cours pour generer des flashcards</p>
-          </div>
-        </motion.div>
-
-        {/* API Key Toggle */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-4"
-        >
-          <button
-            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-            className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1"
-          >
-            <Wand2 className="w-3 h-3" />
-            {apiKey ? 'Cle API configuree' : 'Configurer cle OpenAI (optionnel)'}
-          </button>
-
-          <AnimatePresence>
-            {showApiKeyInput && (
+        {/* Header with Genius Blue Edition styling */}
+        <FadeIn delay={0}>
+          <div className="flex items-center gap-4 mb-6">
+            <motion.div
+              className="relative"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <img src="/ralph.png" alt="Ralph" className="w-14 h-14 object-contain" />
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="mt-2 overflow-hidden"
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-r from-[#0052D4] to-[#6FB1FC] flex items-center justify-center"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-..."
-                    className="flex-1 input-field text-sm"
-                  />
-                  <Button onClick={saveApiKey} variant="secondary" size="sm">
-                    Sauver
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  La cle est stockee localement. Sans cle, la generation sera basique.
-                </p>
+                <Brain className="w-3 h-3 text-white" />
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+            </motion.div>
+            <div>
+              <h1 className="text-2xl font-bold text-gradient-blue">Revision IA</h1>
+              <p className="text-gray-400 text-sm">Transforme tes cours en flashcards</p>
+            </div>
+          </div>
+        </FadeIn>
 
-        {/* Title Input */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mb-4"
-        >
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Titre du set (ex: Histoire - Chapitre 3)"
-            className="w-full input-field"
-          />
-        </motion.div>
+        {/* Stats Preview */}
+        <SlideUp delay={0.1}>
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#0052D4]/20 to-[#4364F7]/20 rounded-2xl p-3 border border-[#4364F7]/30">
+              <div className="absolute -top-2 -right-2 w-10 h-10 bg-[#4364F7]/20 rounded-full blur-xl" />
+              <GraduationCap className="w-4 h-4 text-[#6FB1FC] mb-1" />
+              <p className="text-lg font-bold text-white">{wordCount}</p>
+              <p className="text-[10px] text-gray-400">Mots</p>
+            </div>
 
-        {/* Notes Input */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-4"
-        >
-          <div className="relative">
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Colle tes notes de cours ici...
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#00E5FF]/20 to-[#00B8D4]/20 rounded-2xl p-3 border border-[#00E5FF]/30">
+              <div className="absolute -top-2 -right-2 w-10 h-10 bg-[#00E5FF]/20 rounded-full blur-xl" />
+              <Target className="w-4 h-4 text-[#00E5FF] mb-1" />
+              <p className="text-lg font-bold text-white">{Math.max(0, Math.floor(wordCount / 30))}</p>
+              <p className="text-[10px] text-gray-400">Cartes estimees</p>
+            </div>
+
+            <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl p-3 border border-amber-500/30">
+              <div className="absolute -top-2 -right-2 w-10 h-10 bg-amber-500/20 rounded-full blur-xl" />
+              <Zap className="w-4 h-4 text-amber-400 mb-1" />
+              <p className="text-lg font-bold text-white">+{Math.max(0, Math.floor(wordCount / 30) * 10)}</p>
+              <p className="text-[10px] text-gray-400">XP potentiel</p>
+            </div>
+          </div>
+        </SlideUp>
+
+        {/* API Key Toggle - Genius Blue Edition */}
+        <SlideUp delay={0.15}>
+          <motion.div
+            className="mb-4 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50"
+            whileHover={{ borderColor: 'rgba(67, 100, 247, 0.3)' }}
+          >
+            <button
+              onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+              className="w-full flex items-center justify-between text-sm group"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#0052D4] to-[#6FB1FC] flex items-center justify-center">
+                  <Wand2 className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-gray-300">{apiKey ? 'Cle API configuree' : 'Configurer cle IA'}</span>
+              </div>
+              {apiKey && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-xs px-2 py-1 rounded-full bg-[#00C853]/20 text-[#00C853]"
+                >
+                  Active
+                </motion.span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {showApiKeyInput && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="mt-3 overflow-hidden"
+                >
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="sk-..."
+                      className="flex-1 input-field text-sm focus:border-[#4364F7]"
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={saveApiKey}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0052D4] to-[#6FB1FC] text-white text-sm font-medium"
+                    >
+                      Sauver
+                    </motion.button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Stockage local securise. Sans cle, generation basique.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </SlideUp>
+
+        {/* Title Input - Enhanced */}
+        <SlideUp delay={0.2}>
+          <div className="mb-4">
+            <label className="text-xs text-gray-400 mb-1 block">Titre du set</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Histoire - La Revolution Francaise"
+                className="w-full input-field focus:border-[#4364F7] pr-10"
+              />
+              {title && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <CheckCircle className="w-5 h-5 text-[#00C853]" />
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </SlideUp>
+
+        {/* Notes Input - Enhanced with glow */}
+        <SlideUp delay={0.25}>
+          <div className="mb-4">
+            <label className="text-xs text-gray-400 mb-1 block">Tes notes de cours</label>
+            <div className="relative group">
+              <motion.div
+                className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#0052D4]/20 via-[#4364F7]/20 to-[#6FB1FC]/20 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10 blur-xl"
+              />
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Colle tes notes de cours ici...
 
 Exemple:
 La Revolution francaise a commence en 1789 avec la prise de la Bastille. C'etait un evenement majeur qui a marque le debut de la fin de la monarchie absolue en France.
 
 Les causes principales etaient les inegalites sociales, la crise economique, et l'influence des philosophes des Lumieres comme Voltaire et Rousseau..."
-              className="w-full h-64 input-field resize-none"
-            />
-            <div className="absolute bottom-2 right-2 flex items-center gap-2">
-              <span className="text-xs text-gray-500">{wordCount} mots</span>
-              {notes.length > 0 && (
-                <button
-                  onClick={handleClear}
-                  className="p-1 hover:bg-slate-700 rounded"
+                className="w-full h-48 input-field resize-none focus:border-[#4364F7] transition-all duration-300"
+              />
+              <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                <motion.span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    wordCount >= 50 ? 'bg-[#00C853]/20 text-[#00C853]' : 'bg-slate-700 text-gray-400'
+                  }`}
+                  animate={wordCount >= 50 ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ duration: 0.3 }}
                 >
-                  <Trash2 className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
+                  {wordCount} mots
+                </motion.span>
+                {notes.length > 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleClear}
+                    className="p-1.5 bg-[#FF5252]/20 hover:bg-[#FF5252]/30 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4 text-[#FF5252]" />
+                  </motion.button>
+                )}
+              </div>
             </div>
+            {notes.length > 0 && notes.length < 50 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-amber-400 mt-2 flex items-center gap-1"
+              >
+                <AlertCircle className="w-3 h-3" />
+                Encore {50 - notes.length} caracteres minimum
+              </motion.p>
+            )}
           </div>
-        </motion.div>
+        </SlideUp>
 
-        {/* Error/Success Messages */}
+        {/* Error Message - Enhanced */}
         <AnimatePresence>
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2 text-red-400"
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="mb-4 p-4 bg-[#FF5252]/10 border border-[#FF5252]/30 rounded-xl flex items-center gap-3"
             >
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm">{error}</span>
+              <div className="w-10 h-10 rounded-full bg-[#FF5252]/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-[#FF5252]" />
+              </div>
+              <span className="text-sm text-[#FF5252]">{error}</span>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Generate Button */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-6"
-        >
-          <Button
+        {/* Generate Button - Genius Blue Edition */}
+        <SlideUp delay={0.3}>
+          <motion.button
             onClick={handleGenerate}
             disabled={loading || notes.length < 50}
-            variant="primary"
-            size="lg"
-            className="w-full"
-            leftIcon={loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+            className={`w-full py-4 rounded-2xl font-semibold text-white relative overflow-hidden transition-all duration-300 ${
+              loading || notes.length < 50
+                ? 'bg-slate-700 cursor-not-allowed'
+                : 'bg-gradient-to-r from-[#0052D4] via-[#4364F7] to-[#6FB1FC]'
+            }`}
+            whileHover={notes.length >= 50 && !loading ? { scale: 1.02, y: -2 } : {}}
+            whileTap={notes.length >= 50 && !loading ? { scale: 0.98 } : {}}
+            style={{
+              boxShadow: notes.length >= 50 && !loading
+                ? '0 10px 40px -10px rgba(0, 82, 212, 0.5)'
+                : 'none'
+            }}
           >
-            {loading ? 'Generation en cours...' : 'Generer les Flashcards'}
-          </Button>
-        </motion.div>
+            {/* Animated shine effect */}
+            {!loading && notes.length >= 50 && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+              />
+            )}
 
-        {/* Generated Cards Preview */}
+            <div className="flex items-center justify-center gap-2 relative z-10">
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generation en cours...</span>
+                </>
+              ) : (
+                <>
+                  <Brain className="w-5 h-5" />
+                  <span>Generer les Flashcards</span>
+                  <Sparkles className="w-4 h-4" />
+                </>
+              )}
+            </div>
+          </motion.button>
+        </SlideUp>
+
+        {/* Generated Cards Preview - Enhanced */}
         <AnimatePresence>
           {generatedCards.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              className="mt-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  {generatedCards.length} flashcards generees
-                </h2>
+                <motion.div
+                  className="flex items-center gap-2"
+                  initial={{ x: -20 }}
+                  animate={{ x: 0 }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#00C853] to-[#69F0AE] flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">{generatedCards.length} flashcards</h2>
+                    <p className="text-xs text-gray-400">Pret a reviser</p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-xs px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-400 font-medium"
+                >
+                  +{generatedCards.length * 10} XP
+                </motion.div>
               </div>
 
-              <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
+              <StaggerContainer className="space-y-3 mb-6 max-h-64 overflow-y-auto pr-1">
                 {generatedCards.slice(0, 5).map((card, index) => (
-                  <Card key={card.id} variant="default" padding="sm">
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs font-bold text-primary-400 mt-0.5">
-                        Q{index + 1}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm font-medium truncate">
-                          {card.question}
-                        </p>
-                        <p className="text-gray-400 text-xs mt-1 truncate">
-                          R: {card.answer}
-                        </p>
+                  <StaggerItem key={card.id}>
+                    <motion.div
+                      className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-[#4364F7]/30 transition-all duration-300"
+                      whileHover={{ x: 4, boxShadow: '0 4px 20px -4px rgba(0, 82, 212, 0.2)' }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#0052D4] to-[#6FB1FC] flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-sm font-bold">Q{index + 1}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-medium line-clamp-1">
+                            {card.question}
+                          </p>
+                          <p className="text-gray-400 text-xs mt-1 line-clamp-1">
+                            {card.answer}
+                          </p>
+                        </div>
+                        <DifficultyBadge difficulty={card.difficulty} />
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        card.difficulty === 'easy' ? 'bg-green-500/20 text-green-400' :
-                        card.difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
-                        'bg-amber-500/20 text-amber-400'
-                      }`}>
-                        {card.difficulty === 'easy' ? 'Facile' : card.difficulty === 'hard' ? 'Difficile' : 'Moyen'}
-                      </span>
-                    </div>
-                  </Card>
+                    </motion.div>
+                  </StaggerItem>
                 ))}
-                {generatedCards.length > 5 && (
-                  <p className="text-center text-gray-500 text-sm">
-                    + {generatedCards.length - 5} autres cartes...
-                  </p>
-                )}
-              </div>
+              </StaggerContainer>
 
-              <Button
+              {generatedCards.length > 5 && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-gray-500 text-sm mb-4"
+                >
+                  + {generatedCards.length - 5} autres cartes...
+                </motion.p>
+              )}
+
+              <motion.button
                 onClick={handleSaveSet}
-                variant="secondary"
-                size="lg"
-                className="w-full"
-                leftIcon={<ArrowRight className="w-5 h-5" />}
+                className="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-[#00E5FF] via-[#18FFFF] to-[#84FFFF] relative overflow-hidden"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                style={{ boxShadow: '0 10px 40px -10px rgba(0, 229, 255, 0.5)' }}
               >
-                Commencer la revision
-              </Button>
+                <div className="flex items-center justify-center gap-2 text-slate-900">
+                  <span>Commencer la revision</span>
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Tips */}
+        {/* Tips - Enhanced with Genius Blue Edition */}
         {generatedCards.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <h3 className="text-sm font-medium text-gray-400 mb-3">Conseils</h3>
-            <div className="space-y-2">
-              {[
-                { icon: FileText, text: 'Colle des paragraphes complets pour de meilleurs resultats' },
-                { icon: BookOpen, text: 'Plus il y a de contenu, plus les flashcards seront variees' },
-                { icon: Sparkles, text: 'Avec une cle API, la generation sera plus intelligente' }
-              ].map((tip, i) => (
-                <div key={i} className="flex items-center gap-3 text-gray-500 text-sm">
-                  <tip.icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{tip.text}</span>
-                </div>
-              ))}
+          <SlideUp delay={0.4}>
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-amber-400" />
+                Conseils
+              </h3>
+              <StaggerContainer className="space-y-2">
+                {[
+                  { icon: FileText, text: 'Colle des paragraphes complets pour de meilleurs resultats', color: 'from-[#0052D4] to-[#6FB1FC]' },
+                  { icon: BookOpen, text: 'Plus il y a de contenu, plus les flashcards seront variees', color: 'from-[#00E5FF] to-[#84FFFF]' },
+                  { icon: Sparkles, text: 'Avec une cle API, la generation sera plus intelligente', color: 'from-amber-500 to-orange-500' }
+                ].map((tip, i) => (
+                  <StaggerItem key={i}>
+                    <motion.div
+                      className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/30 border border-slate-700/30"
+                      whileHover={{ x: 4, borderColor: 'rgba(67, 100, 247, 0.3)' }}
+                    >
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${tip.color} flex items-center justify-center flex-shrink-0`}>
+                        <tip.icon className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-gray-400 text-sm">{tip.text}</span>
+                    </motion.div>
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
             </div>
-          </motion.div>
+          </SlideUp>
         )}
       </div>
 
