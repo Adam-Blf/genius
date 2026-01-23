@@ -85,11 +85,12 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite 6
+- **Frontend**: React 19, TypeScript, Vite 7
 - **Styling**: Tailwind CSS v4
-- **Animations**: Framer Motion
+- **Animations**: Framer Motion (spring physics, velocity-based)
 - **Auth/DB**: Supabase
-- **PWA**: VitePWA
+- **Local Storage**: Dexie.js (IndexedDB wrapper)
+- **PWA**: VitePWA + Workbox
 - **Icons**: Lucide React
 - **AI**: Multi-provider (Groq, Together, Ollama, OpenRouter)
 - **Facts API**: API Ninjas, Open Trivia DB
@@ -221,6 +222,17 @@ Accedez a Settings > Generation IA pour configurer un provider:
 - Fallback: contenu local si aucun provider configure
 
 ## Changelog
+
+### 2026-01-23 - v3.3.0
+- **NEW**: Integration Dexie.js pour IndexedDB robuste
+- **NEW**: PhysicsSwipeCard avec animations spring physics realistes
+- **NEW**: FlipCard3D avec tilt effect au survol souris
+- **NEW**: Hooks React pour Dexie.js (useSavedFacts, useFlashcards, useUserStats)
+- **NEW**: Systeme de combo sur les swipes consecutifs
+- **NEW**: Export/Import des donnees via IndexedDB
+- **UPDATE**: FunFacts page utilise maintenant IndexedDB au lieu de localStorage
+- **UPDATE**: Animations de swipe avec velocity-based physics
+- **PERF**: Meilleure gestion des donnees offline avec Dexie.js
 
 ### 2026-01-23 - v3.2.0
 - **CLEANUP**: Suppression des fichiers obsoletes (App.css, react.svg, vite.svg)
