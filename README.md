@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-active-green)
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
-![Version](https://img.shields.io/badge/version-3.0.0-green)
+![Version](https://img.shields.io/badge/version-3.1.0-green)
 
 ## Description
 
@@ -21,6 +21,14 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 - [x] Systeme de vies (5 coeurs, regeneration 30min)
 - [x] XP et systeme de streak
 - [x] Leaderboard et classement
+
+### Nouveautes v3.1 - Onboarding Flow
+- [x] **Onboarding Complet** - Tutoriel de premiere utilisation en 10 etapes
+- [x] **Detection Premier Lancement** - Redirection automatique vers tutoriel
+- [x] **Persistance Immediate** - Toutes les preferences sauvegardees en temps reel
+- [x] **Presentation Features** - Introduction animee aux fonctionnalites cles
+- [x] **Collecte Preferences** - Nom, niveau, categories, objectifs, temps quotidien
+- [x] **Option Revoir Tutoriel** - Disponible dans Settings
 
 ### Nouveautes v3.0 - Local-First & LLM
 - [x] **Stockage Local Flexible** - Notes, memos, donnees personnalisees sans schema rigide
@@ -131,6 +139,7 @@ src/
     GameContext.tsx
     UserDataContext.tsx    # Nouveau contexte local-first
     FlashcardContext.tsx
+    OnboardingContext.tsx  # Gestion etat onboarding
   pages/
     Home.tsx              # Accueil avec acces rapide
     FunFacts.tsx          # Swipe de fun facts
@@ -141,6 +150,7 @@ src/
     TriviaQuiz.tsx        # Quiz avec contenu enrichi
     Learn.tsx             # Categories de quiz
     Lesson.tsx            # Session de quiz
+    OnboardingFlow.tsx    # Tutoriel premier lancement (10 etapes)
   routes/                 # React Router configuration
   services/
     apis.ts               # APIs externes (Open Trivia DB)
@@ -153,6 +163,7 @@ src/
   hooks/
     useUserDataStore.ts   # Hook CRUD donnees locales
     useLLM.ts            # Hook integration LLM
+    useOnboarding.ts     # Hook detection premier lancement
   utils/
     logger.ts            # Systeme de logging
   data/                  # Donnees locales (facts.ts)
@@ -162,6 +173,7 @@ src/
 
 | Ecran | Route | Description |
 |-------|-------|-------------|
+| Welcome | `/welcome` | Tutoriel onboarding premiere utilisation |
 | Home | `/` | Dashboard avec XP, streak, acces rapide |
 | Fun Facts | `/funfacts` | Swipe de faits avec sauvegarde |
 | Notes | `/notes` | Saisie de cours pour flashcards IA |
@@ -210,6 +222,18 @@ Accedez a Settings > Generation IA pour configurer un provider:
 - Fallback: contenu local si aucun provider configure
 
 ## Changelog
+
+### 2025-01-23 - v3.1.0
+- **NEW**: Onboarding Flow complet pour premiere utilisation
+- **NEW**: Detection automatique du premier lancement
+- **NEW**: Tutoriel en 10 etapes avec animations fluides
+- **NEW**: Presentation des features (Revision, LLM, Stats)
+- **NEW**: Collecte preferences utilisateur (nom, niveau, categories, objectifs)
+- **NEW**: OnboardingGuard pour proteger les routes
+- **NEW**: useOnboarding hook pour gestion etat
+- **NEW**: Option revoir tutoriel dans Settings
+- **UPDATE**: Home affiche le nom personnalise de l'utilisateur
+- **UPDATE**: Persistance immediate de toutes les preferences
 
 ### 2025-01-23 - v3.0.0
 - **NEW**: Architecture Local-First avec stockage flexible
