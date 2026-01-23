@@ -101,6 +101,13 @@ export interface AppSettings {
   value: string | number | boolean | object
 }
 
+export interface UnlockedAchievement {
+  id?: number
+  achievementId: string
+  unlockedAt: Date
+  progress?: number
+}
+
 // Define the database
 class GeniusDB extends Dexie {
   savedFacts!: EntityTable<SavedFact, 'id'>
@@ -112,6 +119,7 @@ class GeniusDB extends Dexie {
   memos!: EntityTable<Memo, 'id'>
   goals!: EntityTable<Goal, 'id'>
   settings!: EntityTable<AppSettings, 'id'>
+  achievements!: EntityTable<UnlockedAchievement, 'id'>
 
   constructor() {
     super('GeniusDB')
@@ -126,6 +134,20 @@ class GeniusDB extends Dexie {
       memos: '++id, category, createdAt',
       goals: '++id, completed, deadline, createdAt',
       settings: '++id, key'
+    })
+
+    // Version 2: Add achievements table
+    this.version(2).stores({
+      savedFacts: '++id, factId, category, savedAt',
+      flashcards: '++id, category, difficulty, nextReview, createdAt',
+      quizScores: '++id, category, completedAt',
+      userStats: '++id',
+      badges: 'id, rarity, unlockedAt',
+      notes: '++id, *tags, isPinned, createdAt, updatedAt',
+      memos: '++id, category, createdAt',
+      goals: '++id, completed, deadline, createdAt',
+      settings: '++id, key',
+      achievements: '++id, achievementId, unlockedAt'
     })
   }
 }
