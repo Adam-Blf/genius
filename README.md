@@ -100,6 +100,38 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 - **Facts API**: API Ninjas, Open Trivia DB
 - **Deployment**: Vercel
 
+## Design System - Genius Blue Edition
+
+Le projet utilise la charte graphique **"Genius Blue Edition"** avec une palette électrique moderne en dégradé bleu.
+
+### Palette Couleurs
+- **Primaire**: #0052D4 (Deep Electric) → #4364F7 (Royal) → #6FB1FC (Sky)
+- **Actions**: #00E5FF (Cyan/GENIUS), #FF5252 (Coral/NOPE), #00C853 (Green)
+- **Fonds**: #0F172A (Dark), #F8F9FA (Light)
+
+### Documentation Design
+- **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Documentation complète de la palette et des composants
+- **[STYLE_GUIDE_QUICK.md](./STYLE_GUIDE_QUICK.md)** - Référence rapide pour développeurs
+- **[COMPONENTS_EXAMPLES.md](./COMPONENTS_EXAMPLES.md)** - Exemples visuels avec code
+
+### Utilisation Rapide
+```jsx
+// Boutons
+<button className="btn-primary">Action principale</button>
+<button className="btn-secondary">Action secondaire</button>
+
+// Cartes
+<div className="genius-card">Contenu swipeable 3D</div>
+<div className="glass-card">Glassmorphism card</div>
+
+// FAB Controls
+<FABControls onSwipeLeft={} onSwipeRight={} onFlip={} />
+
+// Couleurs d'action
+<span className="text-genius-cyan">✓ Positif</span>
+<span className="text-genius-coral">✗ Négatif</span>
+```
+
 ## Installation
 
 ```bash
