@@ -8,50 +8,76 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Genius Blue Edition - Primary Gradient Colors
         primary: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+          50: '#e6f0ff',
+          100: '#cce0ff',
+          200: '#99c2ff',
+          300: '#6FB1FC', // Sky
+          400: '#4364F7', // Royal
+          500: '#0052D4', // Deep Electric
+          600: '#0047b8',
+          700: '#003d9c',
+          800: '#003280',
+          900: '#002864',
+          950: '#001d4d',
         },
-        secondary: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7c3aed',
-          800: '#6b21a8',
-          900: '#581c87',
-          950: '#3b0764',
-        },
-        accent: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
-          950: '#451a03',
-        },
+        // Swipe Actions
         genius: {
-          bg: '#0f172a',
+          // Backgrounds
+          bg: '#0F172A',        // Deep Slate (Dark Mode)
+          'bg-light': '#F8F9FA', // Clean White (Light Mode)
           card: '#1e293b',
           border: '#334155',
-        }
+          // Action Colors
+          cyan: '#00E5FF',       // Cyan Neon - Swipe Right
+          green: '#00C853',      // Alternative Green
+          coral: '#FF5252',      // Soft Coral - Swipe Left
+          // Gradient stops
+          'grad-start': '#0052D4',  // Deep Electric
+          'grad-mid': '#4364F7',    // Royal
+          'grad-end': '#6FB1FC',    // Sky
+        },
+        // Legacy support
+        secondary: {
+          50: '#e6f0ff',
+          100: '#cce0ff',
+          200: '#99c2ff',
+          300: '#6FB1FC',
+          400: '#4364F7',
+          500: '#0052D4',
+          600: '#0047b8',
+          700: '#003d9c',
+          800: '#003280',
+          900: '#002864',
+          950: '#001d4d',
+        },
+        accent: {
+          50: '#e0ffff',
+          100: '#b3ffff',
+          200: '#80ffff',
+          300: '#4dffff',
+          400: '#1affff',
+          500: '#00E5FF', // Cyan Neon
+          600: '#00b8cc',
+          700: '#008a99',
+          800: '#005c66',
+          900: '#002e33',
+          950: '#001a1d',
+        },
+      },
+      // Blue-tinted box shadow for cards
+      boxShadow: {
+        'genius-card': '0 20px 40px -10px rgba(0, 82, 212, 0.15)',
+        'genius-card-hover': '0 25px 50px -12px rgba(0, 82, 212, 0.25)',
+        'genius-glow': '0 0 30px rgba(0, 229, 255, 0.3)',
+        'nope-glow': '0 0 30px rgba(255, 82, 82, 0.3)',
+        'fab': '0 4px 14px rgba(0, 82, 212, 0.25)',
+        'fab-hover': '0 6px 20px rgba(0, 82, 212, 0.35)',
+      },
+      // Border radius for cards
+      borderRadius: {
+        'card': '24px',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-active-green)
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
-![Version](https://img.shields.io/badge/version-3.5.0-green)
+![Version](https://img.shields.io/badge/version-3.6.0-green)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Bundle](https://img.shields.io/badge/bundle-249KB-blue)
 
@@ -233,6 +233,20 @@ Hugging Face est le provider par defaut. Il fonctionne **sans cle API**!
 - Fallback: contenu local si aucun provider configure
 
 ## Changelog
+
+### 2026-01-23 - v3.6.0 - Genius Blue Edition
+- **NEW**: Charte graphique "Genius Blue Edition" - Design Tinder-style intellectuel
+- **NEW**: Palette "Blue Shift" avec gradient diagonal (#0052D4 -> #4364F7 -> #6FB1FC)
+- **NEW**: Composant GeniusCard avec flip 3D, stamps overlay et ombres bleues
+- **NEW**: FABControls - 3 boutons flottants (Nope/Flip/Genius) avec feedback tactile
+- **NEW**: Ombre portee teintee bleue pour les cartes (box-shadow: 0 20px 40px -10px rgba(0, 82, 212, 0.15))
+- **NEW**: Stamps "GENIUS" (cyan #00E5FF) et "NOPE" (coral #FF5252) lors du swipe
+- **NEW**: Classes CSS utilitaires pour gradient-header, text-gradient-blue
+- **UPDATE**: FunFacts page entierement refaite avec nouvelle charte
+- **UPDATE**: Tailwind config avec nouvelles couleurs et box-shadows personnalisees
+- **UPDATE**: Boutons et inputs stylises avec gradient bleu
+- **UX**: Effet scale 0.95 tactile sur tous les FAB buttons
+- **UX**: Coins tres ronds (24px) pour les cartes ratio 3:4
 
 ### 2026-01-23 - v3.5.0
 - **NEW**: Hugging Face Inference API comme provider LLM par defaut (gratuit, pas de cle requise)

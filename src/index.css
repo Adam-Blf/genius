@@ -29,16 +29,22 @@
     @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
   }
 
+  /* Genius Blue Edition - Primary Gradient Button */
   .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800;
+    background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
     @apply text-white font-semibold py-3 px-6 rounded-xl;
     @apply transition-all duration-200 ease-out;
-    @apply shadow-lg shadow-indigo-600/25;
+    box-shadow: 0 4px 14px rgba(0, 82, 212, 0.25);
     @apply active:scale-95;
   }
 
+  .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 82, 212, 0.35);
+    transform: translateY(-1px);
+  }
+
   .btn-secondary {
-    @apply bg-purple-600 hover:bg-purple-700 active:bg-purple-800;
+    background: linear-gradient(135deg, #4364F7 0%, #6FB1FC 100%);
     @apply text-white font-semibold py-3 px-6 rounded-xl;
     @apply transition-all duration-200 ease-out;
     @apply active:scale-95;
@@ -59,26 +65,38 @@
   }
 
   .btn-answer.selected {
-    @apply border-indigo-500 bg-indigo-500/20;
+    border-color: #4364F7;
+    background: rgba(67, 100, 247, 0.2);
   }
 
   .btn-answer.correct {
-    @apply border-green-500 bg-green-500/20 text-green-400;
+    border-color: #00C853;
+    background: rgba(0, 200, 83, 0.2);
+    color: #00C853;
   }
 
   .btn-answer.wrong {
-    @apply border-red-500 bg-red-500/20 text-red-400;
+    border-color: #FF5252;
+    background: rgba(255, 82, 82, 0.2);
+    color: #FF5252;
   }
 
   .input-field {
     @apply bg-slate-800 border border-slate-700 rounded-xl;
     @apply text-white placeholder-gray-500 py-3 px-4;
-    @apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
     @apply transition-all duration-200;
   }
 
+  .input-field:focus {
+    outline: none;
+    border-color: #4364F7;
+    box-shadow: 0 0 0 3px rgba(67, 100, 247, 0.2);
+  }
+
   .badge-xp {
-    @apply bg-amber-500/20 text-amber-400 font-bold px-3 py-1 rounded-full text-sm;
+    background: rgba(0, 229, 255, 0.2);
+    color: #00E5FF;
+    @apply font-bold px-3 py-1 rounded-full text-sm;
   }
 
   .badge-streak {
@@ -94,7 +112,7 @@
   }
 
   .bg-genius-bg {
-    @apply bg-slate-900;
+    @apply bg-[#0F172A];
   }
 
   .bg-genius-card {
@@ -103,6 +121,90 @@
 
   .border-genius-border {
     @apply border-slate-700;
+  }
+
+  /* Genius Blue Edition - Card Styles */
+  .genius-card {
+    @apply rounded-card bg-white;
+    box-shadow: 0 20px 40px -10px rgba(0, 82, 212, 0.15);
+    aspect-ratio: 3 / 4;
+  }
+
+  .genius-card:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 82, 212, 0.25);
+  }
+
+  /* Swipe Stamps */
+  .stamp-genius {
+    @apply absolute top-8 left-8 px-4 py-2 rounded-xl font-bold text-2xl;
+    @apply border-4 rotate-[-20deg] uppercase tracking-wider;
+    color: #00E5FF;
+    border-color: #00E5FF;
+    background: rgba(0, 229, 255, 0.1);
+  }
+
+  .stamp-nope {
+    @apply absolute top-8 right-8 px-4 py-2 rounded-xl font-bold text-2xl;
+    @apply border-4 rotate-[20deg] uppercase tracking-wider;
+    color: #FF5252;
+    border-color: #FF5252;
+    background: rgba(255, 82, 82, 0.1);
+  }
+
+  /* FAB Buttons */
+  .fab-button {
+    @apply w-16 h-16 rounded-full flex items-center justify-center;
+    @apply transition-all duration-200 ease-out;
+    box-shadow: 0 4px 14px rgba(0, 82, 212, 0.25);
+  }
+
+  .fab-button:active {
+    transform: scale(0.95);
+  }
+
+  .fab-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 82, 212, 0.35);
+  }
+
+  .fab-nope {
+    @apply bg-white border-2;
+    border-color: #FF5252;
+  }
+
+  .fab-nope svg {
+    color: #FF5252;
+  }
+
+  .fab-flip {
+    background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+    @apply border-0;
+  }
+
+  .fab-flip svg {
+    @apply text-white;
+  }
+
+  .fab-genius {
+    @apply bg-white border-2;
+    border-color: #00E5FF;
+  }
+
+  .fab-genius svg {
+    color: #00E5FF;
+  }
+
+  /* Gradient Header */
+  .gradient-header {
+    background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+  }
+
+  /* Gradient Text */
+  .text-gradient-blue {
+    background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 

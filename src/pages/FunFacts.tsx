@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Bookmark, RefreshCw, Sparkles, X, Loader2, Zap, Trophy } from 'lucide-react'
+import { Bookmark, RefreshCw, Sparkles, X, Loader2, Zap, Trophy, RotateCcw } from 'lucide-react'
 import { TopBar } from '../components/layout/TopBar'
 import { BottomNav } from '../components/layout/BottomNav'
 import { Button } from '../components/ui/Button'
-import { PhysicsSwipeCard } from '../components/PhysicsSwipeCard'
+import { GeniusCard, type GeniusCardRef } from '../components/GeniusCard'
+import { FABControls } from '../components/FABControls'
 import { fetchMultipleFacts, type FunFact } from '../services/apis'
 import { useSavedFacts, useUserStats } from '../hooks/useDatabase'
 import { facts as localFacts, categories, type Fact } from '../data/facts'
 
-// Convert API FunFact to local Fact format for PhysicsSwipeCard
+// Convert API FunFact to local Fact format
 function convertToLocalFact(fact: FunFact, index: number): Fact {
   const categoryMap: Record<string, string> = {
     science: 'science',
@@ -20,11 +21,11 @@ function convertToLocalFact(fact: FunFact, index: number): Fact {
   }
 
   const emojiMap: Record<string, string> = {
-    science: '🔬',
-    history: '📜',
-    nature: '🌿',
-    geography: '🌍',
-    general: '🤯'
+    science: '\\ud83d\\udd2c',
+    history: '\\ud83d\\udcdc',
+    nature: '\\ud83c\\udf3f',
+    geography: '\\ud83c\\udf0d',
+    general: '\\ud83e\\udd2f'
   }
 
   const category = categoryMap[fact.category || 'general'] || 'insolite'
@@ -34,7 +35,7 @@ function convertToLocalFact(fact: FunFact, index: number): Fact {
     category,
     title: fact.category || 'Fun Fact',
     content: fact.fact,
-    emoji: emojiMap[fact.category || 'general'] || '💡'
+    emoji: emojiMap[fact.category || 'general'] || '\\ud83d\\udca1'
   }
 }
 
@@ -45,6 +46,8 @@ export function FunFactsPage() {
   const [showSaved, setShowSaved] = useState(false)
   const [combo, setCombo] = useState(0)
   const [showCombo, setShowCombo] = useState(false)
+  const [isFlipped, setIsFlipped] = useState(false)
+  const cardRef = useRef<GeniusCardRef | null>(null)
 
   // Use Dexie.js hooks for persistent storage
   const { facts: savedFacts, saveFact, deleteFact, isLoading: factsLoading } = useSavedFacts()
@@ -59,18 +62,15 @@ export function FunFactsPage() {
       const apiFacts = await fetchMultipleFacts(15)
 
       if (apiFacts.every(f => f.source === 'local')) {
-        // API failed, use local facts
         const shuffled = [...localFacts].sort(() => Math.random() - 0.5).slice(0, 15)
         setFacts(shuffled)
         setError('Mode hors-ligne active')
       } else {
-        // Convert API facts to local format
         const converted = apiFacts.map((f, i) => convertToLocalFact(f, i))
         setFacts(converted)
       }
     } catch (err) {
       console.error('Fetch error:', err)
-      // Fallback to local facts
       const shuffled = [...localFacts].sort(() => Math.random() - 0.5).slice(0, 15)
       setFacts(shuffled)
       setError('Mode hors-ligne active')
@@ -79,7 +79,6 @@ export function FunFactsPage() {
     }
   }, [])
 
-  // Initial fetch
   useEffect(() => {
     fetchFacts()
   }, [fetchFacts])
@@ -89,14 +88,12 @@ export function FunFactsPage() {
     const currentFact = facts[0]
     if (!currentFact) return
 
-    // Remove from deck
     setFacts(prev => prev.slice(1))
+    setIsFlipped(false)
 
-    // Track progress
     await incrementCards()
 
     if (direction === 'right') {
-      // Save fact to Dexie.js IndexedDB
       await saveFact({
         factId: String(currentFact.id),
         title: currentFact.title,
@@ -105,45 +102,48 @@ export function FunFactsPage() {
         category: currentFact.category
       })
 
-      // Award XP for saving
       await addXP(10)
 
-      // Update combo
       setCombo(prev => prev + 1)
       setShowCombo(true)
       setTimeout(() => setShowCombo(false), 1500)
     } else {
-      // Reset combo on skip
       setCombo(0)
     }
 
-    // Award base XP for viewing
     await addXP(2)
 
-    // Fetch more if running low
     if (facts.length <= 4) {
       fetchFacts()
     }
   }, [facts, saveFact, addXP, incrementCards, fetchFacts])
 
-  // Remove saved fact
+  const handleSwipeLeft = () => handleSwipe('left')
+  const handleSwipeRight = () => handleSwipe('right')
+  const handleFlip = () => {
+    cardRef.current?.flip()
+    setIsFlipped(!isFlipped)
+  }
+
   const handleRemoveSaved = useCallback(async (id: number) => {
     await deleteFact(id)
   }, [deleteFact])
 
-  // Reset all progress
   const resetProgress = () => {
     if (confirm('Reinitialiser toute la progression ?')) {
       fetchFacts()
     }
   }
 
+  const currentFact = facts[0]
+  const category = currentFact ? categories[currentFact.category] || categories.insolite : null
+
   return (
-    <div className="min-h-screen bg-slate-950 pb-24 pt-16">
+    <div className="min-h-screen bg-genius-bg pb-40 pt-16">
       <TopBar />
 
       <div className="p-4 max-w-lg mx-auto">
-        {/* Header with stats */}
+        {/* Header with gradient */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -161,7 +161,7 @@ export function FunFactsPage() {
               transition={{ duration: 3, repeat: Infinity }}
             />
             <div>
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gradient-blue flex items-center gap-2">
                 Fun Facts
                 {stats && stats.currentStreak > 0 && (
                   <span className="flex items-center gap-1 text-sm bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full">
@@ -177,9 +177,9 @@ export function FunFactsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSaved(true)}
-              className="relative flex items-center gap-1.5 bg-slate-800/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-slate-700/50 hover:border-amber-500/50 transition-colors"
+              className="relative flex items-center gap-1.5 bg-slate-800/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-slate-700/50 hover:border-[#00E5FF]/50 transition-colors"
             >
-              <Bookmark size={18} className="text-amber-400" />
+              <Bookmark size={18} className="text-[#00E5FF]" />
               <span className="text-sm font-medium text-white">{savedFacts.length}</span>
             </button>
             <button
@@ -192,17 +192,17 @@ export function FunFactsPage() {
           </div>
         </motion.div>
 
-        {/* XP and Stats Bar */}
+        {/* XP and Stats Bar with Blue accent */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex items-center gap-4 text-sm mb-6 p-3 bg-slate-900/50 rounded-2xl border border-slate-800/50"
+          className="flex items-center gap-4 text-sm mb-6 p-3 bg-slate-900/50 rounded-2xl border border-[#4364F7]/20"
         >
-          <div className="flex items-center gap-2 text-indigo-400">
+          <div className="flex items-center gap-2 text-[#00E5FF]">
             <Sparkles size={16} />
             <span>{stats?.totalCards || 0} cartes vues</span>
           </div>
-          <div className="flex items-center gap-2 text-amber-400">
+          <div className="flex items-center gap-2 text-[#6FB1FC]">
             <Trophy size={16} />
             <span>{stats?.totalXP || 0} XP</span>
           </div>
@@ -220,41 +220,119 @@ export function FunFactsPage() {
               exit={{ opacity: 0, scale: 1.5, y: -30 }}
               className="absolute top-32 left-1/2 -translate-x-1/2 z-50"
             >
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-2xl px-6 py-3 rounded-2xl shadow-lg shadow-orange-500/30">
+              <div
+                className="text-white font-bold text-2xl px-6 py-3 rounded-2xl"
+                style={{
+                  background: 'linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%)',
+                  boxShadow: '0 0 30px rgba(0, 229, 255, 0.3)'
+                }}
+              >
                 {combo}x COMBO!
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Swipe Area */}
-        <div className="relative w-full" style={{ height: '480px' }}>
+        {/* Card Area */}
+        <div className="relative w-full flex items-center justify-center" style={{ height: '420px' }}>
           {loading && facts.length === 0 ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               >
-                <Loader2 className="w-12 h-12 text-indigo-400" />
+                <Loader2 className="w-12 h-12 text-[#4364F7]" />
               </motion.div>
               <p className="text-gray-400 mt-4">Chargement des faits...</p>
             </div>
-          ) : facts.length > 0 ? (
-            <AnimatePresence mode="popLayout">
-              {facts.slice(0, 3).map((fact, index) => (
-                <PhysicsSwipeCard
-                  key={`${fact.id}-${index}`}
-                  fact={fact}
-                  onSwipe={handleSwipe}
-                  isTop={index === 0}
+          ) : currentFact ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentFact.id}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="w-full"
+              >
+                <GeniusCard
+                  ref={cardRef}
+                  onSwipeLeft={handleSwipeLeft}
+                  onSwipeRight={handleSwipeRight}
+                  onFlip={(flipped) => setIsFlipped(flipped)}
+                  frontContent={
+                    <div className="h-full flex flex-col">
+                      {/* Category badge */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-3xl">{currentFact.emoji}</span>
+                        <span
+                          className="text-xs font-semibold px-3 py-1 rounded-full"
+                          style={{
+                            background: 'linear-gradient(135deg, #0052D4 0%, #4364F7 100%)',
+                            color: 'white'
+                          }}
+                        >
+                          {category?.name || 'Fun Fact'}
+                        </span>
+                      </div>
+
+                      {/* Question indicator */}
+                      <div className="text-[#0052D4] font-bold text-sm uppercase tracking-wider mb-2">
+                        Le Saviez-Vous ?
+                      </div>
+
+                      {/* Fact content */}
+                      <div className="flex-1 flex items-center">
+                        <p className="text-slate-800 text-lg leading-relaxed font-medium">
+                          {currentFact.content}
+                        </p>
+                      </div>
+
+                      {/* Bottom hint */}
+                      <div className="flex items-center justify-center gap-2 text-slate-400 text-xs mt-4">
+                        <RotateCcw size={14} />
+                        <span>Tap pour voir l'explication</span>
+                      </div>
+                    </div>
+                  }
+                  backContent={
+                    <div className="h-full flex flex-col bg-gradient-to-br from-[#0052D4]/5 to-[#6FB1FC]/10 -m-6 p-6 rounded-card">
+                      {/* Back header */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-3xl">{currentFact.emoji}</span>
+                        <span className="text-[#0052D4] font-bold text-lg">
+                          Explication
+                        </span>
+                      </div>
+
+                      {/* Explanation content */}
+                      <div className="flex-1 flex items-center">
+                        <div className="space-y-4">
+                          <p className="text-slate-700 leading-relaxed">
+                            Ce fait fascinant illustre la richesse de notre monde.
+                            Chaque jour apporte son lot de decouvertes et de merveilles.
+                          </p>
+                          <div className="p-4 bg-white/50 rounded-xl border border-[#4364F7]/20">
+                            <p className="text-slate-600 text-sm italic">
+                              "{currentFact.content}"
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Source */}
+                      <div className="text-center text-slate-400 text-xs mt-4">
+                        Source: {category?.name || 'Culture Generale'}
+                      </div>
+                    </div>
+                  }
                 />
-              )).reverse()}
+              </motion.div>
             </AnimatePresence>
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+              className="flex flex-col items-center justify-center text-center px-4"
             >
               <motion.img
                 src="/ralph.png"
@@ -266,7 +344,7 @@ export function FunFactsPage() {
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <h2 className="text-2xl font-bold text-white mb-2">Bravo !</h2>
+              <h2 className="text-2xl font-bold text-gradient-blue mb-2">Bravo !</h2>
               <p className="text-slate-400 mb-6">Tu as explore tous les faits disponibles !</p>
               <Button
                 onClick={fetchFacts}
@@ -280,35 +358,25 @@ export function FunFactsPage() {
           )}
         </div>
 
-        {/* Bottom Instructions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex justify-center items-center gap-12 text-slate-500 mt-4"
-        >
-          <div className="flex flex-col items-center">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center mb-2 shadow-lg shadow-red-500/20"
-            >
-              <X className="w-7 h-7 text-white" />
-            </motion.div>
-            <span className="text-xs font-medium">Suivant</span>
+        {/* Remaining cards indicator */}
+        {facts.length > 0 && (
+          <div className="text-center text-slate-500 text-sm mt-2">
+            {facts.length} carte{facts.length > 1 ? 's' : ''} restante{facts.length > 1 ? 's' : ''}
           </div>
-          <div className="flex flex-col items-center">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="w-14 h-14 rounded-full bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center mb-2 shadow-lg shadow-green-500/20"
-            >
-              <Bookmark className="w-7 h-7 text-white" />
-            </motion.div>
-            <span className="text-xs font-medium">Sauvegarder</span>
-          </div>
-        </motion.div>
+        )}
       </div>
+
+      {/* FAB Controls - Fixed at bottom */}
+      {facts.length > 0 && (
+        <div className="fixed bottom-20 left-0 right-0 z-40 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/95 to-transparent pt-8 pb-4">
+          <FABControls
+            onSwipeLeft={handleSwipeLeft}
+            onFlip={handleFlip}
+            onSwipeRight={handleSwipeRight}
+            variant="sparkles"
+          />
+        </div>
+      )}
 
       {/* Saved Facts Modal */}
       <AnimatePresence>
@@ -336,7 +404,7 @@ export function FunFactsPage() {
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Bookmark className="text-amber-400" />
+                    <Bookmark className="text-[#00E5FF]" />
                     Mes favoris
                     <span className="text-sm font-normal text-slate-400">
                       ({savedFacts.length})
@@ -353,7 +421,7 @@ export function FunFactsPage() {
                 <div className="overflow-y-auto max-h-[65vh] space-y-3 pb-8">
                   {factsLoading ? (
                     <div className="text-center py-12">
-                      <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto" />
+                      <Loader2 className="w-8 h-8 text-[#4364F7] animate-spin mx-auto" />
                     </div>
                   ) : savedFacts.length === 0 ? (
                     <div className="text-center py-12 text-slate-500">
@@ -363,7 +431,7 @@ export function FunFactsPage() {
                     </div>
                   ) : (
                     savedFacts.map((fact, index) => {
-                      const category = categories[fact.category] || categories.insolite
+                      const factCategory = categories[fact.category] || categories.insolite
 
                       return (
                         <motion.div
@@ -373,7 +441,10 @@ export function FunFactsPage() {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 100 }}
                           transition={{ delay: index * 0.05 }}
-                          className={`bg-gradient-to-br ${category.color} p-0.5 rounded-2xl`}
+                          className="p-0.5 rounded-2xl"
+                          style={{
+                            background: 'linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%)'
+                          }}
                         >
                           <div className="bg-slate-900 rounded-[14px] p-4 relative group">
                             <button
@@ -385,8 +456,8 @@ export function FunFactsPage() {
 
                             <div className="flex items-center gap-2 mb-2">
                               <span className="text-xl">{fact.emoji}</span>
-                              <span className="text-xs font-medium text-slate-400">
-                                {category.name}
+                              <span className="text-xs font-medium text-[#6FB1FC]">
+                                {factCategory.name}
                               </span>
                             </div>
 
