@@ -1,5 +1,4 @@
 import { useCallback, useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
 import { useGame } from '../contexts/GameContext'
 import {
   getStoredHeartsData,
@@ -9,8 +8,24 @@ import {
   formatTimeRemaining
 } from '../services/heartService'
 
+// Local profile management (no auth needed)
+function useLocalProfile() {
+  const getProfile = () => {
+    const stored = localStorage.getItem('genius_profile')
+    return stored ? JSON.parse(stored) : { hearts: 5, xp_total: 0, current_streak: 0 }
+  }
+
+  const updateProfile = (updates: Record<string, unknown>) => {
+    const current = getProfile()
+    const updated = { ...current, ...updates }
+    localStorage.setItem('genius_profile', JSON.stringify(updated))
+  }
+
+  return { profile: getProfile(), updateProfile }
+}
+
 export function useGameEngine() {
-  const { profile, updateProfile } = useAuth()
+  const { profile, updateProfile } = useLocalProfile()
   const game = useGame()
 
   const [heartsData, setHeartsData] = useState(getStoredHeartsData())

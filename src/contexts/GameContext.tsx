@@ -8,7 +8,6 @@ import {
   AnswerResult,
   LessonResult
 } from '../types/game'
-import { useAuth } from './AuthContext'
 
 const GameContext = createContext<GameContextType | undefined>(undefined)
 
@@ -19,6 +18,28 @@ const XP_MULTIPLIERS = {
   3: 1.5,
   4: 1.8,
   5: 2
+}
+
+// Mock profile for no-auth mode
+function useLocalProfile() {
+  const getProfile = () => {
+    const stored = localStorage.getItem('genius_profile')
+    return stored ? JSON.parse(stored) : {
+      hearts: 5,
+      xp_total: 0,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: null
+    }
+  }
+
+  const updateProfile = (updates: Record<string, unknown>) => {
+    const current = getProfile()
+    const updated = { ...current, ...updates }
+    localStorage.setItem('genius_profile', JSON.stringify(updated))
+  }
+
+  return { profile: getProfile(), updateProfile }
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -43,7 +64,7 @@ function shuffleQuestion(question: Question): ShuffledQuestion {
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const { profile, updateProfile } = useAuth()
+  const { profile, updateProfile } = useLocalProfile()
   const [gameState, setGameState] = useState<GameState | null>(null)
 
   const startLesson = useCallback(async (categoryId: string, lessonNumber: number) => {
