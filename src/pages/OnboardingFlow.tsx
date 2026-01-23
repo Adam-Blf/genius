@@ -1,10 +1,11 @@
 /**
- * Onboarding Flow - Complete Tutorial Experience
+ * Onboarding Flow - Complete 10-Step Tutorial Experience
  * Features: Welcome, Features intro, User info collection, Preferences
+ * With Ralph mascot, animations, swipe navigation
  */
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
@@ -13,11 +14,17 @@ import {
   Sparkles,
   Brain,
   FileText,
-  GraduationCap,
+  Camera,
+  Type,
   Target,
   Clock,
   Zap,
-  ChevronRight
+  ChevronRight,
+  Heart,
+  Flame,
+  Trophy,
+  Star,
+  Image
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -26,18 +33,18 @@ import { cn } from '../lib/utils'
 import { useOnboardingContext } from '../contexts/OnboardingContext'
 import { useUserData } from '../contexts/UserDataContext'
 
-// Step definitions
+// Step definitions - 10 total steps
 type OnboardingStep =
-  | 'welcome'
-  | 'features-revision'
-  | 'features-llm'
-  | 'features-stats'
-  | 'name'
-  | 'level'
-  | 'categories'
-  | 'goals'
-  | 'daily-time'
-  | 'complete'
+  | 'welcome'           // Step 1: Welcome with Ralph
+  | 'features-revision' // Step 2: Revision intelligente
+  | 'features-llm'      // Step 3: IA Personnalisee
+  | 'features-stats'    // Step 4: Statistiques locales
+  | 'name'              // Step 5: Prenom
+  | 'level'             // Step 6: Niveau
+  | 'categories'        // Step 7: Categories (8 options)
+  | 'goals'             // Step 8: Objectifs (6 options)
+  | 'daily-time'        // Step 9: Temps quotidien (5 options)
+  | 'complete'          // Step 10: Recapitulatif
 
 const STEPS: OnboardingStep[] = [
   'welcome',
@@ -59,7 +66,7 @@ const levels = [
   { id: 'expert', name: 'Expert', emoji: '🧠', description: 'Je suis un pro du quiz' }
 ]
 
-// Learning categories
+// 8 Learning categories
 const categories = [
   { id: 'history', name: 'Histoire', emoji: '📜' },
   { id: 'science', name: 'Sciences', emoji: '🔬' },
@@ -71,7 +78,7 @@ const categories = [
   { id: 'nature', name: 'Nature', emoji: '🌿' }
 ]
 
-// Learning goals
+// 6 Learning goals
 const learningGoalsOptions = [
   { id: 'culture', label: 'Enrichir ma culture generale', emoji: '📚' },
   { id: 'exam', label: 'Preparer un examen', emoji: '📝' },
@@ -81,7 +88,7 @@ const learningGoalsOptions = [
   { id: 'curiosity', label: 'Satisfaire ma curiosite', emoji: '🔍' }
 ]
 
-// Daily time options
+// 5 Daily time options
 const dailyTimeOptions = [
   { minutes: 5, label: '5 min', description: 'Debutant' },
   { minutes: 10, label: '10 min', description: 'Leger' },
@@ -92,9 +99,15 @@ const dailyTimeOptions = [
 
 // Animation variants
 const pageVariants = {
-  initial: { opacity: 0, x: 50 },
+  initial: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 100 : -100
+  }),
   animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -50 }
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? -100 : 100
+  })
 }
 
 const pageTransition = {
@@ -106,7 +119,7 @@ const pageTransition = {
 export function OnboardingFlowPage() {
   const navigate = useNavigate()
   const { progress, saveProgress, completeOnboarding } = useOnboardingContext()
-  const { updateProfile, updatePreferences } = useUserData()
+  const { updateProfile } = useUserData()
 
   const [currentStepIndex, setCurrentStepIndex] = useState(progress.currentStep)
   const [displayName, setDisplayName] = useState(progress.displayName)
@@ -115,6 +128,11 @@ export function OnboardingFlowPage() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>(progress.learningGoals)
   const [dailyMinutes, setDailyMinutes] = useState(progress.dailyGoalMinutes)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [direction, setDirection] = useState(1)
+
+  // Swipe handling
+  const x = useMotionValue(0)
+  const swipeThreshold = 50
 
   const currentStep = STEPS[currentStepIndex]
   const totalSteps = STEPS.length
@@ -160,6 +178,7 @@ export function OnboardingFlowPage() {
     if (!canProceed()) return
 
     setIsAnimating(true)
+    setDirection(1)
 
     if (currentStep === 'complete') {
       // Save all data to user profile
@@ -182,15 +201,35 @@ export function OnboardingFlowPage() {
       setCurrentStepIndex(prev => Math.min(prev + 1, totalSteps - 1))
     }
 
-    setTimeout(() => setIsAnimating(false), 300)
+    setTimeout(() => setIsAnimating(false), 400)
   }
 
   const handleBack = () => {
     if (isAnimating) return
     if (currentStepIndex > 0) {
       setIsAnimating(true)
+      setDirection(-1)
       setCurrentStepIndex(prev => prev - 1)
-      setTimeout(() => setIsAnimating(false), 300)
+      setTimeout(() => setIsAnimating(false), 400)
+    }
+  }
+
+  const handleSkipIntro = () => {
+    if (isAnimating) return
+    setIsAnimating(true)
+    setDirection(1)
+    setCurrentStepIndex(STEPS.indexOf('name'))
+    setTimeout(() => setIsAnimating(false), 400)
+  }
+
+  // Swipe handler
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > swipeThreshold) {
+      if (info.offset.x > 0 && currentStepIndex > 0) {
+        handleBack()
+      } else if (info.offset.x < 0 && canProceed()) {
+        handleNext()
+      }
     }
   }
 
@@ -216,12 +255,12 @@ export function OnboardingFlowPage() {
   return (
     <div className="min-h-screen bg-genius-bg flex flex-col overflow-hidden">
       {/* Progress bar */}
-      <div className="w-full h-1 bg-gray-800">
+      <div className="w-full h-1.5 bg-gray-800">
         <motion.div
-          className="h-full bg-gradient-to-r from-primary-500 to-secondary-500"
+          className="h-full bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500"
           initial={{ width: 0 }}
           animate={{ width: `${progressPercent}%` }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
 
@@ -230,8 +269,8 @@ export function OnboardingFlowPage() {
         <motion.button
           onClick={handleBack}
           className={cn(
-            'p-2 rounded-full transition-opacity',
-            currentStepIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            'p-2 rounded-full bg-white/5 backdrop-blur-sm transition-all',
+            currentStepIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-white/10'
           )}
           whileTap={{ scale: 0.9 }}
         >
@@ -243,12 +282,14 @@ export function OnboardingFlowPage() {
             <motion.div
               key={i}
               className={cn(
-                'w-2 h-2 rounded-full transition-colors',
-                i === currentStepIndex ? 'bg-primary-500' :
-                i < currentStepIndex ? 'bg-primary-500/50' : 'bg-gray-700'
+                'h-2 rounded-full transition-all duration-300',
+                i === currentStepIndex
+                  ? 'w-6 bg-primary-500'
+                  : i < currentStepIndex
+                    ? 'w-2 bg-primary-500/50'
+                    : 'w-2 bg-gray-700'
               )}
-              initial={{ scale: 0.8 }}
-              animate={{ scale: i === currentStepIndex ? 1.2 : 1 }}
+              layout
             />
           ))}
         </div>
@@ -256,13 +297,21 @@ export function OnboardingFlowPage() {
         <div className="w-10" /> {/* Spacer for alignment */}
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col p-6 overflow-y-auto">
-        <AnimatePresence mode="wait">
-          {/* Welcome Step */}
+      {/* Main content area - Swipeable */}
+      <motion.div
+        className="flex-1 flex flex-col p-6 overflow-y-auto touch-pan-y"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+        style={{ x }}
+      >
+        <AnimatePresence mode="wait" custom={direction}>
+          {/* Step 1: Welcome */}
           {currentStep === 'welcome' && (
             <motion.div
               key="welcome"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -288,7 +337,7 @@ export function OnboardingFlowPage() {
               </motion.h1>
 
               <motion.p
-                className="text-gray-400 text-lg max-w-xs"
+                className="text-gray-400 text-lg max-w-xs leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -297,21 +346,22 @@ export function OnboardingFlowPage() {
               </motion.p>
 
               <motion.div
-                className="flex items-center gap-2 mt-8 text-primary-400"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 mt-8 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/30"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 }}
               >
-                <Sparkles className="w-5 h-5" />
-                <span className="text-sm">Pret a devenir un genie ?</span>
+                <Sparkles className="w-5 h-5 text-primary-400" />
+                <span className="text-primary-400 font-medium">Pret a devenir un genie ?</span>
               </motion.div>
             </motion.div>
           )}
 
-          {/* Feature: Revision */}
+          {/* Step 2: Feature - Revision */}
           {currentStep === 'features-revision' && (
             <motion.div
               key="features-revision"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -320,12 +370,12 @@ export function OnboardingFlowPage() {
               className="flex-1 flex flex-col items-center justify-center text-center"
             >
               <motion.div
-                className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-8"
+                className="w-36 h-36 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-8 shadow-2xl shadow-blue-500/30"
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <FileText className="w-16 h-16 text-white" />
+                <FileText className="w-20 h-20 text-white" />
               </motion.div>
 
               <motion.h2
@@ -338,7 +388,7 @@ export function OnboardingFlowPage() {
               </motion.h2>
 
               <motion.p
-                className="text-gray-400 text-base max-w-xs mb-6"
+                className="text-gray-400 text-base max-w-xs mb-8 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -347,30 +397,36 @@ export function OnboardingFlowPage() {
               </motion.p>
 
               <motion.div
-                className="flex flex-wrap justify-center gap-2"
+                className="flex flex-wrap justify-center gap-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                {['PDF', 'Photos', 'Texte'].map((format, i) => (
-                  <motion.span
-                    key={format}
-                    className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm"
+                {[
+                  { icon: FileText, label: 'PDF' },
+                  { icon: Camera, label: 'Photos' },
+                  { icon: Type, label: 'Texte' }
+                ].map((format, i) => (
+                  <motion.div
+                    key={format.label}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/30"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
                   >
-                    {format}
-                  </motion.span>
+                    <format.icon className="w-4 h-4 text-blue-400" />
+                    <span className="text-blue-400 text-sm font-medium">{format.label}</span>
+                  </motion.div>
                 ))}
               </motion.div>
             </motion.div>
           )}
 
-          {/* Feature: LLM Finetune */}
+          {/* Step 3: Feature - LLM */}
           {currentStep === 'features-llm' && (
             <motion.div
               key="features-llm"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -379,12 +435,12 @@ export function OnboardingFlowPage() {
               className="flex-1 flex flex-col items-center justify-center text-center"
             >
               <motion.div
-                className="w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-8"
+                className="w-36 h-36 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-8 shadow-2xl shadow-purple-500/30"
                 initial={{ scale: 0, rotate: 45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <Brain className="w-16 h-16 text-white" />
+                <Brain className="w-20 h-20 text-white" />
               </motion.div>
 
               <motion.h2
@@ -397,7 +453,7 @@ export function OnboardingFlowPage() {
               </motion.h2>
 
               <motion.p
-                className="text-gray-400 text-base max-w-xs mb-6"
+                className="text-gray-400 text-base max-w-xs mb-8 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -406,21 +462,22 @@ export function OnboardingFlowPage() {
               </motion.p>
 
               <motion.div
-                className="flex items-center gap-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                className="flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4 }}
               >
                 <Zap className="w-5 h-5 text-amber-400" />
-                <span className="text-amber-400 text-sm">100% local et prive</span>
+                <span className="text-amber-400 font-medium">100% local et prive</span>
               </motion.div>
             </motion.div>
           )}
 
-          {/* Feature: Stats */}
+          {/* Step 4: Feature - Stats */}
           {currentStep === 'features-stats' && (
             <motion.div
               key="features-stats"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -429,12 +486,12 @@ export function OnboardingFlowPage() {
               className="flex-1 flex flex-col items-center justify-center text-center"
             >
               <motion.div
-                className="w-32 h-32 rounded-3xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-8"
+                className="w-36 h-36 rounded-3xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30"
                 initial={{ scale: 0, y: 50 }}
                 animate={{ scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <Target className="w-16 h-16 text-white" />
+                <Target className="w-20 h-20 text-white" />
               </motion.div>
 
               <motion.h2
@@ -447,7 +504,7 @@ export function OnboardingFlowPage() {
               </motion.h2>
 
               <motion.p
-                className="text-gray-400 text-base max-w-xs mb-6"
+                className="text-gray-400 text-base max-w-xs mb-8 leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -456,35 +513,38 @@ export function OnboardingFlowPage() {
               </motion.p>
 
               <motion.div
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-3 gap-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
                 {[
-                  { label: 'Streak', value: '🔥' },
-                  { label: 'XP', value: '⭐' },
-                  { label: 'Badges', value: '🏆' }
+                  { icon: Flame, label: 'Streak', color: 'text-orange-400' },
+                  { icon: Star, label: 'XP', color: 'text-yellow-400' },
+                  { icon: Trophy, label: 'Badges', color: 'text-amber-400' }
                 ].map((stat, i) => (
                   <motion.div
                     key={stat.label}
-                    className="text-center"
+                    className="flex flex-col items-center gap-2"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
                   >
-                    <span className="text-2xl">{stat.value}</span>
-                    <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center">
+                      <stat.icon className={`w-7 h-7 ${stat.color}`} />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">{stat.label}</span>
                   </motion.div>
                 ))}
               </motion.div>
             </motion.div>
           )}
 
-          {/* Name Step */}
+          {/* Step 5: Name Input */}
           {currentStep === 'name' && (
             <motion.div
               key="name"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -492,7 +552,34 @@ export function OnboardingFlowPage() {
               transition={pageTransition}
               className="flex-1 flex flex-col"
             >
-              <RalphMascot mood="happy" size="lg" className="mx-auto mb-6" />
+              <div className="flex justify-center mb-2">
+                <RalphMascot mood="happy" size="lg" />
+              </div>
+
+              {/* Hearts around Ralph */}
+              <motion.div
+                className="flex justify-center gap-2 mb-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {[0, 1, 2].map(i => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      y: [0, -5, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      delay: i * 0.2,
+                      repeat: Infinity
+                    }}
+                  >
+                    <Heart className="w-5 h-5 text-red-400 fill-red-400" />
+                  </motion.div>
+                ))}
+              </motion.div>
 
               <h1 className="text-2xl font-bold text-white text-center mb-2">
                 Comment tu t'appelles ?
@@ -501,22 +588,25 @@ export function OnboardingFlowPage() {
                 Ralph veut savoir comment t'appeler !
               </p>
 
-              <motion.input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Ton prenom ou pseudo"
-                className="input-field text-center text-lg py-4"
-                maxLength={20}
-                autoFocus
+              <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-              />
+              >
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Ton prenom ou pseudo"
+                  className="w-full input-field text-center text-lg py-4 bg-white/5 border-white/10 focus:border-primary-500"
+                  maxLength={20}
+                  autoFocus
+                />
+              </motion.div>
 
               {displayName.trim().length >= 2 && (
                 <motion.p
-                  className="text-center text-primary-400 mt-4"
+                  className="text-center text-primary-400 mt-6 font-medium"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -526,10 +616,11 @@ export function OnboardingFlowPage() {
             </motion.div>
           )}
 
-          {/* Level Step */}
+          {/* Step 6: Level Selection */}
           {currentStep === 'level' && (
             <motion.div
               key="level"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -562,22 +653,23 @@ export function OnboardingFlowPage() {
                       className={cn(
                         'border-2 transition-all',
                         selectedLevel === level.id
-                          ? 'border-primary-500 bg-primary-500/10'
-                          : 'border-transparent'
+                          ? 'border-primary-500 bg-primary-500/10 shadow-lg shadow-primary-500/20'
+                          : 'border-transparent hover:border-white/10'
                       )}
                     >
                       <div className="flex items-center gap-4">
-                        <span className="text-3xl">{level.emoji}</span>
+                        <span className="text-4xl">{level.emoji}</span>
                         <div className="flex-1">
-                          <p className="font-semibold text-white">{level.name}</p>
+                          <p className="font-semibold text-white text-lg">{level.name}</p>
                           <p className="text-sm text-gray-400">{level.description}</p>
                         </div>
                         {selectedLevel === level.id && (
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
+                            className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center"
                           >
-                            <Check className="w-6 h-6 text-primary-400" />
+                            <Check className="w-5 h-5 text-white" />
                           </motion.div>
                         )}
                       </div>
@@ -588,10 +680,11 @@ export function OnboardingFlowPage() {
             </motion.div>
           )}
 
-          {/* Categories Step */}
+          {/* Step 7: Categories Selection (8 options) */}
           {currentStep === 'categories' && (
             <motion.div
               key="categories"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -599,12 +692,12 @@ export function OnboardingFlowPage() {
               transition={pageTransition}
               className="flex-1 flex flex-col"
             >
-              <RalphMascot mood="idle" size="md" className="mx-auto mb-6" />
+              <RalphMascot mood="idle" size="md" className="mx-auto mb-4" />
 
               <h1 className="text-2xl font-bold text-white text-center mb-2">
                 Qu'est-ce qui t'interesse ?
               </h1>
-              <p className="text-gray-400 text-center mb-8">
+              <p className="text-gray-400 text-center mb-6">
                 Choisis au moins une categorie
               </p>
 
@@ -620,13 +713,19 @@ export function OnboardingFlowPage() {
                       transition={{ delay: 0.05 * i }}
                       whileTap={{ scale: 0.95 }}
                       className={cn(
-                        'p-4 rounded-2xl border-2 transition-all text-center relative',
+                        'p-4 rounded-2xl border-2 transition-all text-center relative overflow-hidden',
                         isSelected
-                          ? 'border-primary-500 bg-primary-500/20'
-                          : 'border-genius-border bg-genius-card hover:bg-white/5'
+                          ? 'border-primary-500 bg-primary-500/20 shadow-lg shadow-primary-500/20'
+                          : 'border-genius-border bg-genius-card hover:bg-white/5 hover:border-white/10'
                       )}
                     >
-                      <span className="text-3xl block mb-2">{category.emoji}</span>
+                      <motion.span
+                        className="text-4xl block mb-2"
+                        animate={isSelected ? { scale: [1, 1.2, 1] } : {}}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {category.emoji}
+                      </motion.span>
                       <span className={cn(
                         'font-medium text-sm',
                         isSelected ? 'text-primary-400' : 'text-white'
@@ -637,22 +736,33 @@ export function OnboardingFlowPage() {
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-2 right-2"
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center"
                         >
-                          <Check className="w-4 h-4 text-primary-400" />
+                          <Check className="w-4 h-4 text-white" />
                         </motion.div>
                       )}
                     </motion.button>
                   )
                 })}
               </div>
+
+              {selectedCategories.length > 0 && (
+                <motion.p
+                  className="text-center text-primary-400 mt-4 text-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {selectedCategories.length} categorie{selectedCategories.length > 1 ? 's' : ''} selectionnee{selectedCategories.length > 1 ? 's' : ''}
+                </motion.p>
+              )}
             </motion.div>
           )}
 
-          {/* Goals Step */}
+          {/* Step 8: Goals Selection (6 options) */}
           {currentStep === 'goals' && (
             <motion.div
               key="goals"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -660,12 +770,12 @@ export function OnboardingFlowPage() {
               transition={pageTransition}
               className="flex-1 flex flex-col"
             >
-              <RalphMascot mood="happy" size="md" className="mx-auto mb-6" />
+              <RalphMascot mood="happy" size="md" className="mx-auto mb-4" />
 
               <h1 className="text-2xl font-bold text-white text-center mb-2">
                 Quels sont tes objectifs ?
               </h1>
-              <p className="text-gray-400 text-center mb-8">
+              <p className="text-gray-400 text-center mb-6">
                 Selectionne ce qui te motive
               </p>
 
@@ -683,8 +793,8 @@ export function OnboardingFlowPage() {
                       className={cn(
                         'w-full p-4 rounded-2xl border-2 transition-all text-left flex items-center gap-4',
                         isSelected
-                          ? 'border-primary-500 bg-primary-500/10'
-                          : 'border-genius-border bg-genius-card hover:bg-white/5'
+                          ? 'border-primary-500 bg-primary-500/10 shadow-lg shadow-primary-500/20'
+                          : 'border-genius-border bg-genius-card hover:bg-white/5 hover:border-white/10'
                       )}
                     >
                       <span className="text-2xl">{goal.emoji}</span>
@@ -695,8 +805,12 @@ export function OnboardingFlowPage() {
                         {goal.label}
                       </span>
                       {isSelected && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                          <Check className="w-5 h-5 text-primary-400" />
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center"
+                        >
+                          <Check className="w-4 h-4 text-white" />
                         </motion.div>
                       )}
                     </motion.button>
@@ -706,10 +820,11 @@ export function OnboardingFlowPage() {
             </motion.div>
           )}
 
-          {/* Daily Time Step */}
+          {/* Step 9: Daily Time Selection (5 options) */}
           {currentStep === 'daily-time' && (
             <motion.div
               key="daily-time"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -719,12 +834,12 @@ export function OnboardingFlowPage() {
             >
               <div className="flex items-center justify-center mb-6">
                 <motion.div
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center"
+                  className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/30"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 200 }}
                 >
-                  <Clock className="w-10 h-10 text-white" />
+                  <Clock className="w-12 h-12 text-white" />
                 </motion.div>
               </div>
 
@@ -749,13 +864,13 @@ export function OnboardingFlowPage() {
                       className={cn(
                         'w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between',
                         isSelected
-                          ? 'border-amber-500 bg-amber-500/10'
-                          : 'border-genius-border bg-genius-card hover:bg-white/5'
+                          ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20'
+                          : 'border-genius-border bg-genius-card hover:bg-white/5 hover:border-white/10'
                       )}
                     >
                       <div className="flex items-center gap-4">
                         <span className={cn(
-                          'text-xl font-bold',
+                          'text-2xl font-bold',
                           isSelected ? 'text-amber-400' : 'text-white'
                         )}>
                           {option.label}
@@ -763,8 +878,12 @@ export function OnboardingFlowPage() {
                         <span className="text-sm text-gray-500">{option.description}</span>
                       </div>
                       {isSelected && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                          <Check className="w-5 h-5 text-amber-400" />
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center"
+                        >
+                          <Check className="w-4 h-4 text-white" />
                         </motion.div>
                       )}
                     </motion.button>
@@ -774,10 +893,11 @@ export function OnboardingFlowPage() {
             </motion.div>
           )}
 
-          {/* Complete Step */}
+          {/* Step 10: Complete / Recap */}
           {currentStep === 'complete' && (
             <motion.div
               key="complete"
+              custom={direction}
               variants={pageVariants}
               initial="initial"
               animate="animate"
@@ -793,8 +913,27 @@ export function OnboardingFlowPage() {
                 <RalphMascot mood="celebrating" size="xl" />
               </motion.div>
 
+              {/* Hearts */}
+              <motion.div
+                className="flex justify-center gap-3 mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {[0, 1, 2, 3, 4].map(i => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.4 + i * 0.1, type: 'spring' }}
+                  >
+                    <Heart className="w-6 h-6 text-red-400 fill-red-400" />
+                  </motion.div>
+                ))}
+              </motion.div>
+
               <motion.h1
-                className="text-3xl font-bold text-white mt-8 mb-4"
+                className="text-3xl font-bold text-white mt-6 mb-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
@@ -818,20 +957,20 @@ export function OnboardingFlowPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                   <span className="text-gray-400">Niveau</span>
-                  <span className="text-white font-medium">
-                    {levels.find(l => l.id === selectedLevel)?.emoji}{' '}
+                  <span className="text-white font-medium flex items-center gap-2">
+                    <span className="text-xl">{levels.find(l => l.id === selectedLevel)?.emoji}</span>
                     {levels.find(l => l.id === selectedLevel)?.name}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                   <span className="text-gray-400">Categories</span>
                   <span className="text-white font-medium">
                     {selectedCategories.length} selectionnee{selectedCategories.length > 1 ? 's' : ''}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
                   <span className="text-gray-400">Objectif quotidien</span>
                   <span className="text-white font-medium">{dailyMinutes} min/jour</span>
                 </div>
@@ -839,7 +978,7 @@ export function OnboardingFlowPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Bottom button */}
       <motion.div
@@ -852,7 +991,7 @@ export function OnboardingFlowPage() {
           onClick={handleNext}
           variant="primary"
           size="lg"
-          className="w-full"
+          className="w-full shadow-lg shadow-primary-500/30"
           disabled={!canProceed() || isAnimating}
           rightIcon={currentStep === 'complete' ? <Sparkles className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
         >
@@ -862,14 +1001,26 @@ export function OnboardingFlowPage() {
         {/* Skip button for feature slides */}
         {['features-revision', 'features-llm', 'features-stats'].includes(currentStep) && (
           <motion.button
-            onClick={() => setCurrentStepIndex(STEPS.indexOf('name'))}
-            className="w-full mt-3 py-2 text-gray-500 text-sm hover:text-gray-400 transition-colors"
+            onClick={handleSkipIntro}
+            className="w-full mt-4 py-3 text-gray-500 text-sm hover:text-gray-400 transition-colors"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
             Passer l'introduction
           </motion.button>
+        )}
+
+        {/* Swipe hint on first step */}
+        {currentStep === 'welcome' && (
+          <motion.p
+            className="text-center text-gray-600 text-xs mt-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            Swipe ou appuie pour naviguer
+          </motion.p>
         )}
       </motion.div>
     </div>

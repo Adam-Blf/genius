@@ -63,6 +63,7 @@ export function useLLM(): UseLLMReturn {
   const isConfigured = useMemo(() => {
     if (config.provider === 'none') return false
     if (config.provider === 'ollama') return true // Ollama doesn't need API key
+    if (config.provider === 'huggingface') return true // HuggingFace works without API key (free tier)
     return !!config.apiKey
   }, [config])
 

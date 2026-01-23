@@ -7,7 +7,7 @@
 // PROVIDER CONFIGURATION
 // ============================================
 
-export type LLMProvider = 'groq' | 'together' | 'ollama' | 'openrouter' | 'none'
+export type LLMProvider = 'huggingface' | 'groq' | 'together' | 'ollama' | 'openrouter' | 'none'
 
 export interface LLMConfig {
   provider: LLMProvider
@@ -19,14 +19,20 @@ export interface LLMConfig {
 }
 
 export const DEFAULT_LLM_CONFIG: LLMConfig = {
-  provider: 'groq',
-  model: 'llama-3.3-70b-versatile',
+  provider: 'huggingface',
+  model: 'mistralai/Mistral-7B-Instruct-v0.3',
   temperature: 0.7,
   maxTokens: 2048
 }
 
 // Provider-specific models
 export const LLM_MODELS: Record<LLMProvider, { id: string; name: string; description: string }[]> = {
+  huggingface: [
+    { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', description: 'Gratuit, rapide et performant' },
+    { id: 'meta-llama/Llama-3.2-3B-Instruct', name: 'Llama 3.2 3B', description: 'Gratuit, modele compact' },
+    { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen 2.5 72B', description: 'Gratuit, haute qualite' },
+    { id: 'microsoft/Phi-3-mini-4k-instruct', name: 'Phi 3 Mini', description: 'Gratuit, tres rapide' }
+  ],
   groq: [
     { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', description: 'Best quality, fast' },
     { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', description: 'Very fast, good quality' },

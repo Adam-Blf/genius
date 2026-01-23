@@ -36,6 +36,12 @@ import type { LLMProvider } from '../types/llm'
 import { LLM_MODELS } from '../types/llm'
 
 const PROVIDER_INFO = {
+  huggingface: {
+    name: 'Hugging Face',
+    description: 'Gratuit, pas de cle requise',
+    url: 'https://huggingface.co/settings/tokens',
+    color: 'from-yellow-500 to-orange-500'
+  },
   groq: {
     name: 'Groq',
     description: 'API ultra-rapide, gratuite (limite)',
@@ -84,9 +90,11 @@ export function SettingsPage() {
   const handleProviderChange = (provider: LLMProvider) => {
     setSelectedProvider(provider)
     setConnectionStatus('idle')
-    if (provider === 'none' || provider === 'ollama') {
+    if (provider === 'none' || provider === 'ollama' || provider === 'huggingface') {
       setProvider(provider)
-      setApiKey('')
+      if (provider !== 'huggingface') {
+        setApiKey('')
+      }
     }
   }
 
@@ -176,6 +184,16 @@ export function SettingsPage() {
                 })}
               </div>
             </div>
+
+            {/* HuggingFace Info */}
+            {selectedProvider === 'huggingface' && (
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-sm text-yellow-400">
+                  Hugging Face fonctionne sans cle API (tier gratuit).
+                  Ajoutez une cle pour des limites de requetes plus elevees.
+                </p>
+              </div>
+            )}
 
             {/* API Key Input */}
             {selectedProvider !== 'none' && selectedProvider !== 'ollama' && (

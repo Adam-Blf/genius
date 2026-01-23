@@ -58,7 +58,7 @@ async function generateFlashcardsWithAI(notes: string, apiKey: string | null): P
             - answer: une reponse complete mais pas trop longue
             - difficulty: "easy", "medium" ou "hard"
 
-            Genere entre 5 et 15 flashcards selon la quantite de contenu.
+            Genere autant de flashcards que necessaire pour couvrir tout le contenu (pas de limite).
             Reponds UNIQUEMENT avec un tableau JSON valide.`
           },
           {
@@ -102,11 +102,10 @@ async function generateFlashcardsWithAI(notes: string, apiKey: string | null): P
 function generateFlashcardsLocally(notes: string): GeneratedFlashcard[] {
   const flashcards: GeneratedFlashcard[] = []
 
-  // Split into sentences/paragraphs
+  // Split into sentences/paragraphs - No limit on cards!
   const sentences = notes
     .split(/[.!?]\s+/)
     .filter(s => s.trim().length > 20)
-    .slice(0, 15) // Limit to 15 cards
 
   sentences.forEach((sentence, index) => {
     const trimmed = sentence.trim()

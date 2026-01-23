@@ -53,6 +53,61 @@ function setCachedResponse(key: string, response: LLMResponse): void {
 // API CALLS
 // ============================================
 
+async function callHuggingFace(config: LLMConfig, request: LLMRequest): Promise<LLMResponse> {
+  const model = config.model || 'mistralai/Mistral-7B-Instruct-v0.3'
+  const apiKey = config.apiKey
+
+  // Format messages for HuggingFace chat API
+  const formattedMessages = request.messages.map(m => ({
+    role: m.role,
+    content: m.content
+  }))
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  }
+
+  // API key is optional for free tier but recommended
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`
+  }
+
+  const response = await fetch(`https://api-inference.huggingface.co/models/${model}/v1/chat/completions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: model,
+      messages: formattedMessages,
+      temperature: request.temperature ?? config.temperature ?? 0.7,
+      max_tokens: request.maxTokens ?? config.maxTokens ?? 2048,
+      stream: false
+    })
+  })
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw new LLMError('Rate limit exceeded - try again later', 'RATE_LIMIT', 'huggingface')
+    }
+    if (response.status === 503) {
+      throw new LLMError('Model is loading, please retry in a few seconds', 'API_ERROR', 'huggingface')
+    }
+    throw new LLMError(`HuggingFace API error: ${response.status}`, 'API_ERROR', 'huggingface')
+  }
+
+  const data = await response.json()
+
+  return {
+    content: data.choices?.[0]?.message?.content || '',
+    usage: data.usage ? {
+      promptTokens: data.usage.prompt_tokens,
+      completionTokens: data.usage.completion_tokens,
+      totalTokens: data.usage.total_tokens
+    } : undefined,
+    model: model,
+    finishReason: data.choices?.[0]?.finish_reason || 'stop'
+  }
+}
+
 async function callGroq(config: LLMConfig, request: LLMRequest): Promise<LLMResponse> {
   if (!config.apiKey) {
     throw new LLMError('Groq API key is required', 'CONFIG_ERROR', 'groq')
@@ -227,6 +282,9 @@ export async function callLLM(
 
   try {
     switch (config.provider) {
+      case 'huggingface':
+        response = await callHuggingFace(config, request)
+        break
       case 'groq':
         response = await callGroq(config, request)
         break
