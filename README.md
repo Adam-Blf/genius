@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-active-green)
 ![PWA](https://img.shields.io/badge/PWA-ready-blue)
-![Version](https://img.shields.io/badge/version-3.4.0-green)
+![Version](https://img.shields.io/badge/version-3.5.0-green)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Bundle](https://img.shields.io/badge/bundle-249KB-blue)
 
@@ -12,7 +12,7 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 
 ## Demo
 
-**Live**: https://genius-peach-two.vercel.app
+**Live**: https://genius-pwa.vercel.app
 
 ## Features
 
@@ -50,11 +50,13 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 - [x] **Bookmarks** - Sauvegarde de contenu educatif
 
 ### Integration LLM
+- [x] **Hugging Face** - API gratuite par defaut (pas de cle requise!)
 - [x] **Groq** - API ultra-rapide et gratuite
 - [x] **Together.ai** - Large selection de modeles
 - [x] **OpenRouter** - Acces multi-providers
 - [x] **Ollama** - Modeles 100% locaux et prives
 - [x] **Test de Connexion** - Verification en temps reel
+- [x] **Flashcards Illimitees** - Aucune limite sur le nombre de cartes
 
 ### Nouveautes v2.1 - Gamification
 - [x] **Persistance localStorage** - Toutes les flashcards sont sauvegardees localement
@@ -94,7 +96,7 @@ Genius est une PWA gamifiee style Duolingo pour apprendre la culture generale et
 - **Local Storage**: Dexie.js (IndexedDB wrapper)
 - **PWA**: VitePWA + Workbox
 - **Icons**: Lucide React
-- **AI**: Multi-provider (Groq, Together, Ollama, OpenRouter)
+- **AI**: Multi-provider (HuggingFace, Groq, Together, Ollama, OpenRouter)
 - **Facts API**: API Ninjas, Open Trivia DB
 - **Deployment**: Vercel
 
@@ -188,7 +190,14 @@ src/
 
 Accedez a Settings > Generation IA pour configurer un provider:
 
-### Groq (Recommande - Gratuit)
+### Hugging Face (Recommande - Gratuit par defaut)
+Hugging Face est le provider par defaut. Il fonctionne **sans cle API**!
+
+1. Selectionnez Hugging Face dans Settings
+2. C'est tout! La generation de flashcards fonctionne immediatement
+3. (Optionnel) Ajoutez une cle API pour des limites plus elevees
+
+### Groq (Gratuit)
 1. Creer un compte sur [console.groq.com](https://console.groq.com)
 2. Generer une cle API
 3. Coller la cle dans Settings
@@ -224,6 +233,18 @@ Accedez a Settings > Generation IA pour configurer un provider:
 - Fallback: contenu local si aucun provider configure
 
 ## Changelog
+
+### 2026-01-23 - v3.5.0
+- **NEW**: Hugging Face Inference API comme provider LLM par defaut (gratuit, pas de cle requise)
+- **NEW**: Flashcards illimitees - suppression de la limite de 15 cartes
+- **NEW**: Onboarding tutoriel complet en 10 etapes avec Ralph
+- **NEW**: Swipe navigation dans l'onboarding
+- **NEW**: 8 categories d'interet selectionnables
+- **NEW**: 6 objectifs d'apprentissage
+- **NEW**: 5 options de temps quotidien
+- **NEW**: Ecran recapitulatif personnalise
+- **UPDATE**: Animation amelioree pour chaque etape d'onboarding
+- **UPDATE**: Provider LLM par defaut change de Groq a Hugging Face
 
 ### 2026-01-23 - v3.4.0
 - **NEW**: Code splitting pour bundle optimise (249KB vs 580KB)
