@@ -7,6 +7,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 import { OnboardingGuard } from '../components/OnboardingGuard'
 import { ToastProvider } from '../components/ui/Toast'
 import { ConfettiProvider } from '../components/ui/Confetti'
+import { InstallPrompt, OfflineBanner, UpdatePrompt } from '../components/pwa'
 
 // Lazy load pages to avoid circular dependencies
 import { lazy, Suspense } from 'react'
@@ -44,6 +45,11 @@ export function AppRouter() {
             <OnboardingProvider>
               <UserDataProvider>
                 <FlashcardProvider>
+                  {/* PWA Components */}
+                  <OfflineBanner />
+                  <UpdatePrompt />
+                  <InstallPrompt />
+
                   <Suspense fallback={<LoadingScreen />}>
                     <Routes>
                   {/* Onboarding Flow - First Launch Tutorial */}
