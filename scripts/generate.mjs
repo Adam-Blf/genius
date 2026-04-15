@@ -911,6 +911,349 @@ async function corpsCelestes() {
   } catch (e) { console.warn(`✗ satellites:`, e.message); }
 }
 
+/**
+ * 23. Acteurs par pays.
+ */
+async function acteursParPays() {
+  const q = `
+    SELECT ?p ?pLabel ?natLabel WHERE {
+      ?p wdt:P106 wd:Q33999 ; wdt:P27 ?nat .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 4000`;
+  try {
+    const rows = await sparql(q);
+    const byNat = new Map();
+    for (const r of rows) {
+      const k = r.natLabel?.value;
+      if (!k) continue;
+      if (!byNat.has(k)) byNat.set(k, []);
+      byNat.get(k).push(r.pLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.pLabel?.value).filter(Boolean))];
+    for (const [nat, list] of byNat) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 5) continue;
+      const slug = nat.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `acteur-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "arts",
+        question: `Acteur/actrice ${nat} ?`, answer: n, choicesPool: pool,
+      }));
+      addChapter({ id: chapterId, title: `Acteurs · ${nat}`, subtitle: `${cards.length} vedettes`, emoji: "🎭", category: "arts", cards });
+    }
+    console.log(`✓ acteurs · ${byNat.size}`);
+  } catch (e) { console.warn(`✗ acteurs:`, e.message); }
+}
+
+/**
+ * 24. Universités par pays.
+ */
+async function universitesParPays() {
+  const q = `
+    SELECT ?u ?uLabel ?countryLabel WHERE {
+      ?u wdt:P31/wdt:P279* wd:Q3918 ; wdt:P17 ?country .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 3000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value; if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r.uLabel?.value);
+    }
+    for (const [country, list] of byCountry) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 5) continue;
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `univ-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "divers",
+        question: `Université située en ${country} ?`,
+        answer: n, choicesPool: [...new Set([].concat(...[...byCountry.values()]))].slice(0, 200),
+      }));
+      addChapter({ id: chapterId, title: `Universités · ${country}`, subtitle: `${cards.length} établissements`, emoji: "🎓", category: "divers", cards });
+    }
+    console.log(`✓ universités · ${byCountry.size}`);
+  } catch (e) { console.warn(`✗ universités:`, e.message); }
+}
+
+/**
+ * 25. Groupes musicaux par pays.
+ */
+async function groupesMusicauxParPays() {
+  const q = `
+    SELECT ?g ?gLabel ?countryLabel WHERE {
+      ?g wdt:P31 wd:Q215380 ; wdt:P495 ?country .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 3000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value; if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r.gLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.gLabel?.value).filter(Boolean))];
+    for (const [country, list] of byCountry) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 5) continue;
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `groupe-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "arts",
+        question: `Groupe musical originaire de ${country} ?`,
+        answer: n, choicesPool: pool,
+      }));
+      addChapter({ id: chapterId, title: `Groupes · ${country}`, subtitle: `${cards.length} formations`, emoji: "🎸", category: "arts", cards });
+    }
+    console.log(`✓ groupes · ${byCountry.size}`);
+  } catch (e) { console.warn(`✗ groupes:`, e.message); }
+}
+
+/**
+ * 26. Séries TV par pays de production.
+ */
+async function seriesTVParPays() {
+  const q = `
+    SELECT ?s ?sLabel ?countryLabel WHERE {
+      ?s wdt:P31 wd:Q5398426 ; wdt:P495 ?country .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 4000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value; if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r.sLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.sLabel?.value).filter(Boolean))];
+    for (const [country, list] of byCountry) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 8) continue;
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `serie-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "arts",
+        question: `Série TV produite en ${country} ?`,
+        answer: n, choicesPool: pool,
+      }));
+      addChapter({ id: chapterId, title: `Séries · ${country}`, subtitle: `${cards.length} productions`, emoji: "📺", category: "arts", cards });
+    }
+    console.log(`✓ séries TV · ${byCountry.size}`);
+  } catch (e) { console.warn(`✗ séries:`, e.message); }
+}
+
+/**
+ * 27. Régions administratives par pays (P150 contains).
+ */
+async function regionsParPays() {
+  const countries = [
+    { id: "fr", qid: "Q142", label: "France", emoji: "🇫🇷" },
+    { id: "es", qid: "Q29", label: "Espagne", emoji: "🇪🇸" },
+    { id: "it", qid: "Q38", label: "Italie", emoji: "🇮🇹" },
+    { id: "de", qid: "Q183", label: "Allemagne", emoji: "🇩🇪" },
+    { id: "us", qid: "Q30", label: "USA", emoji: "🇺🇸" },
+    { id: "uk", qid: "Q145", label: "Royaume-Uni", emoji: "🇬🇧" },
+    { id: "br", qid: "Q155", label: "Brésil", emoji: "🇧🇷" },
+    { id: "ca", qid: "Q16", label: "Canada", emoji: "🇨🇦" },
+    { id: "ch", qid: "Q39", label: "Suisse", emoji: "🇨🇭" },
+    { id: "be", qid: "Q31", label: "Belgique", emoji: "🇧🇪" },
+  ];
+  for (const c of countries) {
+    const qq = `
+      SELECT ?r ?rLabel WHERE {
+        wd:${c.qid} wdt:P150 ?r .
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+      } LIMIT 60`;
+    try {
+      const rows = await sparql(qq);
+      const names = [...new Set(rows.map(r => r.rLabel?.value).filter(Boolean))];
+      if (names.length < 5) continue;
+      const cards = names.slice(0, 15).map(n => makeCard({
+        chapterId: `reg-${c.id}`, category: "geo",
+        question: `Région administrative de ${c.label} ?`,
+        answer: n, choicesPool: names,
+      }));
+      addChapter({ id: `reg-${c.id}`, title: `Régions · ${c.label}`, subtitle: `${cards.length} divisions`, emoji: c.emoji, category: "geo", cards });
+    } catch (e) { console.warn(`✗ régions ${c.label}:`, e.message); }
+  }
+}
+
+/**
+ * 28. Langues par pays.
+ */
+async function languesParPays() {
+  const q = `
+    SELECT ?c ?cLabel ?langLabel WHERE {
+      ?c wdt:P31 wd:Q6256 ; wdt:P37 ?lang .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 500`;
+  try {
+    const rows = await sparql(q);
+    const pool = [...new Set(rows.map(r => r.langLabel?.value).filter(Boolean))];
+    // 1 chapitre global langues officielles · 1 carte par pays
+    const seen = new Set();
+    const cards = [];
+    for (const r of rows) {
+      const c = r.cLabel?.value, l = r.langLabel?.value;
+      if (!c || !l || seen.has(c)) continue;
+      seen.add(c);
+      cards.push(makeCard({
+        chapterId: "langues-off", category: "geo",
+        question: `Langue officielle en ${c} ?`,
+        answer: l, choicesPool: pool,
+      }));
+    }
+    addChapter({ id: "langues-off", title: "Langues officielles", subtitle: `${cards.length} pays`, emoji: "🗣️", category: "geo", cards: cards.slice(0, 30) });
+  } catch (e) { console.warn(`✗ langues:`, e.message); }
+}
+
+/**
+ * 29. Religions majeures · fondateurs/prophètes.
+ */
+async function religions() {
+  const rels = [
+    { id: "chr", label: "chrétien", q: "Q5043", emoji: "✝️" },
+    { id: "isl", label: "musulman", q: "Q432", emoji: "☪️" },
+    { id: "boud", label: "bouddhiste", q: "Q748", emoji: "☸️" },
+    { id: "hind", label: "hindou", q: "Q9089", emoji: "🕉️" },
+    { id: "jud", label: "juif", q: "Q9268", emoji: "✡️" },
+  ];
+  for (const r of rels) {
+    const qq = `
+      SELECT ?p ?pLabel WHERE {
+        ?p wdt:P140 wd:${r.q} ; wdt:P31 wd:Q5 .
+        ?p wdt:P106 ?occ . FILTER(?occ IN (wd:Q42857, wd:Q713200, wd:Q1234713))
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+      } LIMIT 50`;
+    try {
+      const rows = await sparql(qq);
+      const names = [...new Set(rows.map(x => x.pLabel?.value).filter(Boolean))];
+      if (names.length < 3) continue;
+      const cards = names.slice(0, 15).map(n => makeCard({
+        chapterId: `relig-${r.id}`, category: "histoire",
+        question: `Figure religieuse ${r.label} ?`,
+        answer: n, choicesPool: names,
+      }));
+      addChapter({ id: `relig-${r.id}`, title: `Religion · ${r.label}`, subtitle: `${cards.length} figures`, emoji: r.emoji, category: "histoire", cards });
+    } catch (e) { console.warn(`✗ relig ${r.label}:`, e.message); }
+  }
+}
+
+/**
+ * 30. Inventions par domaine (P31 = invention + P1056 product).
+ */
+async function inventionsParDomaine() {
+  const q = `
+    SELECT ?i ?iLabel ?invLabel ?year WHERE {
+      ?i wdt:P31 wd:Q131800 ; wdt:P61 ?inv . OPTIONAL { ?i wdt:P575 ?date . BIND(YEAR(?date) AS ?year) }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 1500`;
+  try {
+    const rows = await sparql(q);
+    const byCent = new Map();
+    for (const r of rows) {
+      const y = +r.year?.value;
+      if (!y) continue;
+      const c = Math.floor(y / 100) + 1;
+      if (!byCent.has(c)) byCent.set(c, []);
+      byCent.get(c).push(r);
+    }
+    const invNames = [...new Set(rows.map(r => r.invLabel?.value).filter(Boolean))];
+    for (const [cent, items] of byCent) {
+      if (items.length < 4) continue;
+      const chapterId = `inv-${cent}`;
+      const seen = new Set();
+      const cards = [];
+      for (const r of items) {
+        const it = r.iLabel?.value, inv = r.invLabel?.value;
+        if (!it || !inv || seen.has(it)) continue;
+        seen.add(it);
+        cards.push(makeCard({
+          chapterId, category: "sciences",
+          question: `Inventeur de « ${it} » ?`,
+          answer: inv, choicesPool: invNames,
+        }));
+        if (cards.length >= 12) break;
+      }
+      if (cards.length >= 3)
+        addChapter({ id: chapterId, title: `Inventions · ${cent}e siècle`, subtitle: `${cards.length} innovations`, emoji: "💡", category: "sciences", cards });
+    }
+    console.log(`✓ inventions · ${byCent.size} siècles`);
+  } catch (e) { console.warn(`✗ inventions:`, e.message); }
+}
+
+/**
+ * 31. Tableaux célèbres par peintre.
+ */
+async function tableauxParPeintre() {
+  const q = `
+    SELECT ?w ?wLabel ?authorLabel WHERE {
+      ?w wdt:P31 wd:Q3305213 ; wdt:P170 ?author .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 3000`;
+  try {
+    const rows = await sparql(q);
+    const byAuthor = new Map();
+    for (const r of rows) {
+      const a = r.authorLabel?.value; if (!a) continue;
+      if (!byAuthor.has(a)) byAuthor.set(a, []);
+      byAuthor.get(a).push(r.wLabel?.value);
+    }
+    const authors = [...byAuthor.keys()];
+    for (const [author, works] of byAuthor) {
+      const uniq = [...new Set(works.filter(Boolean))];
+      if (uniq.length < 5) continue;
+      const slug = author.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `oeuvres-${slug}`;
+      const cards = uniq.slice(0, 10).map(w => makeCard({
+        chapterId, category: "arts",
+        question: `Qui a peint/créé « ${w} » ?`,
+        answer: author, choicesPool: authors,
+      }));
+      addChapter({ id: chapterId, title: `Œuvres · ${author}`, subtitle: `${cards.length} tableaux`, emoji: "🖼️", category: "arts", cards });
+    }
+    console.log(`✓ tableaux · ${byAuthor.size} auteurs`);
+  } catch (e) { console.warn(`✗ tableaux:`, e.message); }
+}
+
+/**
+ * 32. Aéroports par pays (top trafic).
+ */
+async function aeroportsParPays() {
+  const q = `
+    SELECT ?a ?aLabel ?countryLabel WHERE {
+      ?a wdt:P31/wdt:P279* wd:Q1248784 ; wdt:P17 ?country .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 3000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value; if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r.aLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.aLabel?.value).filter(Boolean))];
+    for (const [country, list] of byCountry) {
+      const uniq = [...new Set(list.filter(Boolean))].filter(n => !/IATA|ICAO/i.test(n));
+      if (uniq.length < 5) continue;
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `aero-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "geo",
+        question: `Aéroport situé en ${country} ?`,
+        answer: n, choicesPool: pool,
+      }));
+      addChapter({ id: chapterId, title: `Aéroports · ${country}`, subtitle: `${cards.length}`, emoji: "✈️", category: "geo", cards });
+    }
+    console.log(`✓ aéroports · ${byCountry.size}`);
+  } catch (e) { console.warn(`✗ aéroports:`, e.message); }
+}
+
 // ─────────────────────────── Exécution ───────────────────────────
 
 const tasks = [
@@ -936,6 +1279,16 @@ const tasks = [
   racesChiens,
   mythologies,
   corpsCelestes,
+  acteursParPays,
+  universitesParPays,
+  groupesMusicauxParPays,
+  seriesTVParPays,
+  regionsParPays,
+  languesParPays,
+  religions,
+  inventionsParDomaine,
+  tableauxParPeintre,
+  aeroportsParPays,
 ];
 
 console.log(`→ lance ${tasks.length} templates SPARQL...`);
