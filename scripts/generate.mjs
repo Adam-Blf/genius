@@ -1254,6 +1254,159 @@ async function aeroportsParPays() {
   } catch (e) { console.warn(`✗ aéroports:`, e.message); }
 }
 
+/** Helper générique : personnes d'une occupation par nationalité, 1 chapitre par pays. */
+async function _personsByProfessionByNationality({ occQ, profLabel, emoji, category, slugPrefix, minPerCountry = 5, capPerChapter = 10 }) {
+  const q = `
+    SELECT ?p ?pLabel ?natLabel WHERE {
+      ?p wdt:P106 wd:${occQ} ; wdt:P27 ?nat .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 5000`;
+  try {
+    const rows = await sparql(q);
+    const byNat = new Map();
+    for (const r of rows) {
+      const k = r.natLabel?.value; if (!k) continue;
+      if (!byNat.has(k)) byNat.set(k, []);
+      byNat.get(k).push(r.pLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.pLabel?.value).filter(Boolean))];
+    let added = 0;
+    for (const [nat, list] of byNat) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < minPerCountry) continue;
+      const slug = nat.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `${slugPrefix}-${slug}`;
+      const cards = uniq.slice(0, capPerChapter).map(n => makeCard({
+        chapterId, category,
+        question: `${profLabel} ${nat} ?`,
+        answer: n, choicesPool: pool,
+      }));
+      addChapter({ id: chapterId, title: `${profLabel}s · ${nat}`, subtitle: `${cards.length} figures`, emoji, category, cards });
+      added++;
+    }
+    console.log(`✓ ${slugPrefix} · ${added}`);
+  } catch (e) { console.warn(`✗ ${slugPrefix}:`, e.message); }
+}
+
+async function footballeursParPays() { return _personsByProfessionByNationality({ occQ: "Q937857", profLabel: "Footballeur", emoji: "⚽", category: "sports", slugPrefix: "foot", minPerCountry: 6 }); }
+async function realisateursParPays() { return _personsByProfessionByNationality({ occQ: "Q2526255", profLabel: "Réalisateur/réalisatrice", emoji: "🎬", category: "arts", slugPrefix: "real", minPerCountry: 5 }); }
+async function chanteursParPays() { return _personsByProfessionByNationality({ occQ: "Q177220", profLabel: "Chanteur/chanteuse", emoji: "🎤", category: "arts", slugPrefix: "chant", minPerCountry: 5 }); }
+async function sculpteursParPays() { return _personsByProfessionByNationality({ occQ: "Q1281618", profLabel: "Sculpteur", emoji: "🗿", category: "arts", slugPrefix: "sculpt", minPerCountry: 4 }); }
+async function architectesParPays() { return _personsByProfessionByNationality({ occQ: "Q42973", profLabel: "Architecte", emoji: "🏛️", category: "arts", slugPrefix: "archi", minPerCountry: 5 }); }
+async function poetesParPays() { return _personsByProfessionByNationality({ occQ: "Q49757", profLabel: "Poète", emoji: "📜", category: "arts", slugPrefix: "poet", minPerCountry: 5 }); }
+async function pilotesF1() { return _personsByProfessionByNationality({ occQ: "Q10841764", profLabel: "Pilote F1", emoji: "🏎️", category: "sports", slugPrefix: "f1", minPerCountry: 3 }); }
+async function tennismenParPays() { return _personsByProfessionByNationality({ occQ: "Q10833314", profLabel: "Joueur de tennis", emoji: "🎾", category: "sports", slugPrefix: "tennis", minPerCountry: 4 }); }
+async function basketteursParPays() { return _personsByProfessionByNationality({ occQ: "Q3665646", profLabel: "Basketteur", emoji: "🏀", category: "sports", slugPrefix: "basket", minPerCountry: 4 }); }
+async function journalistesParPays() { return _personsByProfessionByNationality({ occQ: "Q1930187", profLabel: "Journaliste", emoji: "📰", category: "divers", slugPrefix: "journ", minPerCountry: 5 }); }
+
+/** Helper générique : entités typées par pays. */
+async function _typedByCountry({ typeQ, subQ, label, emoji, category, slugPrefix, question, minPerCountry = 5, capPerChapter = 10 }) {
+  const typeFilter = subQ ? `?x wdt:P31/wdt:P279* wd:${typeQ}` : `?x wdt:P31 wd:${typeQ}`;
+  const q = `
+    SELECT ?x ?xLabel ?countryLabel WHERE {
+      ${typeFilter} . ?x wdt:P17 ?country .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 4000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value; if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r.xLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.xLabel?.value).filter(Boolean))];
+    let added = 0;
+    for (const [country, list] of byCountry) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < minPerCountry) continue;
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `${slugPrefix}-${slug}`;
+      const cards = uniq.slice(0, capPerChapter).map(n => makeCard({
+        chapterId, category,
+        question: question.replace("{x}", n).replace("{country}", country),
+        answer: country, choicesPool: [...byCountry.keys()],
+      }));
+      addChapter({ id: chapterId, title: `${label} · ${country}`, subtitle: `${cards.length}`, emoji, category, cards });
+      added++;
+    }
+    console.log(`✓ ${slugPrefix} · ${added}`);
+  } catch (e) { console.warn(`✗ ${slugPrefix}:`, e.message); }
+}
+
+async function stadesParPays() { return _typedByCountry({ typeQ: "Q483110", subQ: true, label: "Stades", emoji: "🏟️", category: "sports", slugPrefix: "stade", question: "Dans quel pays se trouve le stade {x} ?", minPerCountry: 5 }); }
+async function museesParPays() { return _typedByCountry({ typeQ: "Q33506", subQ: true, label: "Musées", emoji: "🏛️", category: "arts", slugPrefix: "musee", question: "Dans quel pays se trouve le musée {x} ?", minPerCountry: 6 }); }
+async function chateauxParPays() { return _typedByCountry({ typeQ: "Q23413", subQ: true, label: "Châteaux", emoji: "🏰", category: "arts", slugPrefix: "chatx", question: "Dans quel pays se trouve « {x} » ?", minPerCountry: 5 }); }
+async function cathedralesParPays() { return _typedByCountry({ typeQ: "Q2977", subQ: true, label: "Cathédrales", emoji: "⛪", category: "arts", slugPrefix: "cath", question: "Dans quel pays se trouve la cathédrale {x} ?", minPerCountry: 4 }); }
+async function entreprisesParPays() { return _typedByCountry({ typeQ: "Q4830453", subQ: true, label: "Entreprises", emoji: "🏢", category: "divers", slugPrefix: "ent", question: "Entreprise fondée en {country} ?", minPerCountry: 8 }); }
+async function journauxParPays() { return _typedByCountry({ typeQ: "Q11032", subQ: true, label: "Journaux", emoji: "🗞️", category: "divers", slugPrefix: "journ", question: "Journal publié en {country} ?", minPerCountry: 5 }); }
+
+/** Jeux vidéo par développeur (1 chapter par studio qui a >= 5 jeux). */
+async function jeuxVideoParDev() {
+  const q = `
+    SELECT ?g ?gLabel ?devLabel WHERE {
+      ?g wdt:P31/wdt:P279* wd:Q7889 ; wdt:P178 ?dev .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 5000`;
+  try {
+    const rows = await sparql(q);
+    const byDev = new Map();
+    for (const r of rows) {
+      const k = r.devLabel?.value; if (!k) continue;
+      if (!byDev.has(k)) byDev.set(k, []);
+      byDev.get(k).push(r.gLabel?.value);
+    }
+    const devs = [...byDev.keys()];
+    for (const [dev, list] of byDev) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 5) continue;
+      const slug = dev.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `jv-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "divers",
+        question: `Studio développeur de « ${n} » ?`,
+        answer: dev, choicesPool: devs,
+      }));
+      addChapter({ id: chapterId, title: `Jeux vidéo · ${dev}`, subtitle: `${cards.length} titres`, emoji: "🎮", category: "divers", cards });
+    }
+    console.log(`✓ jv · ${byDev.size}`);
+  } catch (e) { console.warn(`✗ jv:`, e.message); }
+}
+
+/** Albums par artiste (1 chapter par artiste avec >= 4 albums). */
+async function albumsParArtiste() {
+  const q = `
+    SELECT ?a ?aLabel ?artistLabel WHERE {
+      ?a wdt:P31 wd:Q482994 ; wdt:P175 ?artist .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 6000`;
+  try {
+    const rows = await sparql(q);
+    const byArtist = new Map();
+    for (const r of rows) {
+      const k = r.artistLabel?.value; if (!k) continue;
+      if (!byArtist.has(k)) byArtist.set(k, []);
+      byArtist.get(k).push(r.aLabel?.value);
+    }
+    const artists = [...byArtist.keys()];
+    let added = 0;
+    for (const [artist, list] of byArtist) {
+      const uniq = [...new Set(list.filter(Boolean))];
+      if (uniq.length < 4) continue;
+      const slug = artist.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `album-${slug}`;
+      const cards = uniq.slice(0, 10).map(n => makeCard({
+        chapterId, category: "arts",
+        question: `Artiste de l'album « ${n} » ?`,
+        answer: artist, choicesPool: artists,
+      }));
+      addChapter({ id: chapterId, title: `Albums · ${artist}`, subtitle: `${cards.length} disques`, emoji: "💿", category: "arts", cards });
+      added++;
+    }
+    console.log(`✓ albums · ${added}`);
+  } catch (e) { console.warn(`✗ albums:`, e.message); }
+}
+
 // ─────────────────────────── Exécution ───────────────────────────
 
 const tasks = [
@@ -1289,6 +1442,24 @@ const tasks = [
   inventionsParDomaine,
   tableauxParPeintre,
   aeroportsParPays,
+  footballeursParPays,
+  realisateursParPays,
+  chanteursParPays,
+  sculpteursParPays,
+  architectesParPays,
+  poetesParPays,
+  pilotesF1,
+  tennismenParPays,
+  basketteursParPays,
+  journalistesParPays,
+  stadesParPays,
+  museesParPays,
+  chateauxParPays,
+  cathedralesParPays,
+  entreprisesParPays,
+  journauxParPays,
+  jeuxVideoParDev,
+  albumsParArtiste,
 ];
 
 console.log(`→ lance ${tasks.length} templates SPARQL...`);
