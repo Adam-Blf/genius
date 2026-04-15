@@ -16,6 +16,8 @@ export interface Flashcard {
   choices?: string[]
   category: Category
   source: 'generic' | 'user'
+  chapterId?: string
+  visibility?: 'private' | 'public-pending' // client-side flag, backend pending
   createdAt: number
 }
 
@@ -24,6 +26,13 @@ export interface Attempt {
   cardUid: string
   correct: boolean
   at: number
+}
+
+export interface ChapterProgress {
+  chapterId: string
+  bestScore: number // 0..10
+  attempts: number
+  completedAt?: number
 }
 
 export interface Profile {
@@ -40,6 +49,7 @@ class GeniusDB extends Dexie {
   flashcards!: Table<Flashcard, number>
   attempts!: Table<Attempt, number>
   profile!: Table<Profile, number>
+  chapterProgress!: Table<ChapterProgress, string>
 
   constructor() {
     super('genius-db')
@@ -47,6 +57,12 @@ class GeniusDB extends Dexie {
       flashcards: '++id, uid, category, source, createdAt',
       attempts: '++id, cardUid, at',
       profile: 'id',
+    })
+    this.version(2).stores({
+      flashcards: '++id, uid, category, source, chapterId, visibility, createdAt',
+      attempts: '++id, cardUid, at',
+      profile: 'id',
+      chapterProgress: 'chapterId',
     })
   }
 }
@@ -110,4 +126,15 @@ export async function regenHeartsIfNeeded(): Promise<Profile> {
   }
   await db.profile.put(updated)
   return updated
+}
+
+export async function recordChapterScore(chapterId: string, score: number) {
+  const existing = await db.chapterProgress.get(chapterId)
+  const best = Math.max(existing?.bestScore ?? 0, score)
+  await db.chapterProgress.put({
+    chapterId,
+    bestScore: best,
+    attempts: (existing?.attempts ?? 0) + 1,
+    completedAt: best >= 8 ? (existing?.completedAt ?? Date.now()) : existing?.completedAt,
+  })
 }

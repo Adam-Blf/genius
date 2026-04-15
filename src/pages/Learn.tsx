@@ -2,8 +2,9 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Heart, Check } from 'lucide-react'
-import { db, addXP, consumeHeart, bumpStreakIfNewDay, type Flashcard, type Category } from '../db'
+import { db, addXP, consumeHeart, bumpStreakIfNewDay, recordChapterScore, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { CHAPTERS } from '../chapters'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -15,13 +16,19 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function LearnPage() {
-  const { scope } = useParams<{ scope?: string }>()
+  const { scope, chapterId } = useParams<{ scope?: string; chapterId?: string }>()
   const navigate = useNavigate()
+
+  const chapter = chapterId ? CHAPTERS.find((c) => c.id === chapterId) : undefined
+
   const cards = useLiveQuery(async () => {
     const all = await db.flashcards.toArray()
+    if (chapter) {
+      return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean) as typeof all
+    }
     const filtered = scope ? all.filter((c) => c.category === (scope as Category)) : all
     return shuffle(filtered).slice(0, 10)
-  }, [scope])
+  }, [scope, chapterId])
 
   const profile = useLiveQuery(async () => await db.profile.get(1))
 
@@ -49,7 +56,7 @@ export function LearnPage() {
       <div className="max-w-lg mx-auto px-5 pt-20 text-center">
         <h2 className="font-display text-3xl mb-2">Pas encore de cartes</h2>
         <p className="text-white/60 mb-6">Ajoute-en depuis l'onglet Creer.</p>
-        <button onClick={() => navigate('/add')} className="btn-chunky" data-variant="grass">
+        <button onClick={() => navigate('/add')} className="btn-chunky" data-variant="elephant">
           Creer une carte
         </button>
       </div>
@@ -58,19 +65,35 @@ export function LearnPage() {
 
   if (idx >= cards.length) {
     const pct = Math.round((correctCount / cards.length) * 100)
+    const outOfTen = Math.round((correctCount / cards.length) * 10)
+    if (chapter && !window.__genius_chapter_recorded) {
+      window.__genius_chapter_recorded = true
+      recordChapterScore(chapter.id, outOfTen)
+    }
     return (
       <div className="max-w-lg mx-auto px-5 pt-16 text-center">
         <div className="text-7xl mb-4">{pct >= 80 ? '🏆' : pct >= 50 ? '🎯' : '💪'}</div>
-        <h2 className="font-display text-4xl mb-2">Session terminee.</h2>
-        <p className="text-white/70 mb-8">
-          {correctCount} / {cards.length} correctes · <span className="text-grass font-bold">+{correctCount * 10} XP</span>
+        <h2 className="font-display text-4xl mb-2">
+          {chapter ? `Chapitre ${chapter.order} termine.` : 'Session terminee.'}
+        </h2>
+        <p className="text-white/70 mb-2">
+          {correctCount} / {cards.length} correctes
         </p>
+        <p className="text-elephant-300 font-bold mb-8">+{correctCount * 10} XP</p>
         <div className="flex flex-col gap-3">
-          <button onClick={() => { setIdx(0); setCorrectCount(0) }} className="btn-chunky" data-variant="grass">
+          <button
+            onClick={() => {
+              window.__genius_chapter_recorded = false
+              setIdx(0)
+              setCorrectCount(0)
+            }}
+            className="btn-chunky"
+            data-variant="elephant"
+          >
             Rejouer
           </button>
           <button onClick={() => navigate('/')} className="btn-chunky" data-variant="ghost">
-            Retour accueil
+            Retour parcours
           </button>
         </div>
       </div>
@@ -99,18 +122,13 @@ export function LearnPage() {
 
   return (
     <div className="max-w-lg mx-auto px-5 pt-6 pb-6 min-h-screen flex flex-col">
-      {/* Top bar */}
       <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => navigate('/')}
-          className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition"
-          aria-label="Fermer"
-        >
+        <button onClick={() => navigate(chapter ? '/' : -1 as never)} className="p-2 -ml-2 hover:bg-white/5 rounded-xl transition" aria-label="Fermer">
           <X className="w-6 h-6" />
         </button>
         <div className="flex-1 h-3 bg-surface rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-grass rounded-full"
+            className="h-full bg-elephant-500 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
@@ -122,8 +140,12 @@ export function LearnPage() {
         </span>
       </div>
 
-      {/* Prompt */}
       <div className="flex-1 flex flex-col">
+        {chapter && (
+          <div className="font-mono text-xs uppercase tracking-[0.2em] text-elephant-300 mb-3">
+            Chapitre {chapter.order} · {chapter.title}
+          </div>
+        )}
         <div className="font-mono text-xs uppercase tracking-[0.2em] text-white/40 mb-3">
           Question {idx + 1} / {cards.length}
         </div>
@@ -139,7 +161,6 @@ export function LearnPage() {
           </motion.h2>
         </AnimatePresence>
 
-        {/* Choices */}
         <div className="space-y-3 mt-auto">
           {choices.map((c) => {
             const isCorrect = c === current.answer
@@ -154,11 +175,11 @@ export function LearnPage() {
               : 'idle'
             const cls =
               state === 'correct'
-                ? 'border-grass bg-grass/10'
+                ? 'border-leaf bg-leaf/10'
                 : state === 'wrong'
                 ? 'border-blaze bg-blaze/10'
                 : state === 'selected'
-                ? 'border-mint bg-mint/10'
+                ? 'border-elephant-400 bg-elephant-500/10'
                 : 'border-line bg-surface hover:border-white/20'
             return (
               <button
@@ -169,7 +190,7 @@ export function LearnPage() {
               >
                 <span className="flex items-center justify-between">
                   {c}
-                  {state === 'correct' && <Check className="w-5 h-5 text-grass" />}
+                  {state === 'correct' && <Check className="w-5 h-5 text-leaf" />}
                   {state === 'wrong' && <X className="w-5 h-5 text-blaze" />}
                 </span>
               </button>
@@ -178,7 +199,6 @@ export function LearnPage() {
         </div>
       </div>
 
-      {/* Footer reveal */}
       <AnimatePresence>
         {revealed && (
           <motion.div
@@ -186,19 +206,17 @@ export function LearnPage() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
             className={`mt-5 rounded-2xl p-4 ${
-              selected === current.answer ? 'bg-grass/10 border border-grass/30' : 'bg-blaze/10 border border-blaze/30'
+              selected === current.answer ? 'bg-leaf/10 border border-leaf/30' : 'bg-blaze/10 border border-blaze/30'
             }`}
           >
-            <div className="font-bold mb-1">
-              {selected === current.answer ? 'Bravo !' : 'Raté'}
-            </div>
+            <div className="font-bold mb-1">{selected === current.answer ? 'Bravo !' : 'Raté'}</div>
             <div className="text-sm text-white/70">
               Reponse · <span className="font-bold text-white">{current.answer}</span>
             </div>
             <button
               onClick={() => setIdx((x) => x + 1)}
               className="btn-chunky mt-4 w-full"
-              data-variant={selected === current.answer ? 'grass' : 'blaze'}
+              data-variant={selected === current.answer ? 'elephant' : 'blaze'}
             >
               Suivant
             </button>
@@ -207,4 +225,10 @@ export function LearnPage() {
       </AnimatePresence>
     </div>
   )
+}
+
+declare global {
+  interface Window {
+    __genius_chapter_recorded?: boolean
+  }
 }

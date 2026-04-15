@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
-import { Home, BookOpen, Plus, User } from 'lucide-react'
+import { Map, BookOpen, Plus, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { HomePage } from './pages/Home'
 import { LearnPage } from './pages/Learn'
 import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
-import { CategoryPage } from './pages/Category'
+import { ChapterPage } from './pages/Chapter'
 import { seedIfEmpty } from './seed'
 import { regenHeartsIfNeeded } from './db'
 
 function BottomNav() {
   const location = useLocation()
   const items = [
-    { to: '/', icon: Home, label: 'Accueil' },
-    { to: '/learn', icon: BookOpen, label: 'Apprendre' },
+    { to: '/', icon: Map, label: 'Parcours' },
+    { to: '/learn', icon: BookOpen, label: 'Libre' },
     { to: '/add', icon: Plus, label: 'Creer' },
     { to: '/profile', icon: User, label: 'Profil' },
   ]
-  const hidden = location.pathname.startsWith('/learn/') || location.pathname.startsWith('/category/')
+  const hidden = location.pathname.startsWith('/learn/')
   if (hidden) return null
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 bg-ink/90 backdrop-blur border-t border-line safe-b">
@@ -30,7 +30,7 @@ function BottomNav() {
               end={it.to === '/'}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 py-3 text-xs transition ${
-                  isActive ? 'text-grass' : 'text-white/50 hover:text-white'
+                  isActive ? 'text-elephant-300' : 'text-white/50 hover:text-white'
                 }`
               }
             >
@@ -63,7 +63,10 @@ export default function App() {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ink">
-        <div className="font-display text-5xl italic text-grass animate-pulse">genius.</div>
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">🐘</span>
+          <div className="font-display text-5xl italic text-elephant-300 animate-pulse">genius.</div>
+        </div>
       </div>
     )
   }
@@ -80,9 +83,10 @@ export default function App() {
         >
           <Routes location={location}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/chapter/:id" element={<ChapterPage />} />
             <Route path="/learn" element={<LearnPage />} />
+            <Route path="/learn/chapter/:chapterId" element={<LearnPage />} />
             <Route path="/learn/:scope" element={<LearnPage />} />
-            <Route path="/category/:cat" element={<CategoryPage />} />
             <Route path="/add" element={<AddCardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>

@@ -15,29 +15,37 @@ body {
   font-feature-settings: 'ss01', 'cv11';
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+  background-image:
+    radial-gradient(800px 400px at 50% -10%, rgba(74,127,181,0.10), transparent 60%);
 }
 
-/* Duolingo-style chunky button with bottom shadow "press" feel */
+/* Chunky button · press feel */
 .btn-chunky {
   @apply relative font-bold uppercase tracking-wide rounded-2xl px-6 py-3 text-white transition-all active:translate-y-1 select-none;
 }
 
-.btn-chunky[data-variant="grass"] { @apply bg-grass shadow-btn-grass; }
-.btn-chunky[data-variant="sun"]   { @apply bg-sun text-ink shadow-btn-sun; }
-.btn-chunky[data-variant="blaze"] { @apply bg-blaze shadow-btn-blaze; }
-.btn-chunky[data-variant="mint"]  { @apply bg-mint shadow-btn-mint; }
+.btn-chunky[data-variant="elephant"] { @apply bg-elephant-500 shadow-btn-elephant; }
+.btn-chunky[data-variant="sun"]      { @apply bg-sun text-ink shadow-btn-sun; }
+.btn-chunky[data-variant="blaze"]    { @apply bg-blaze shadow-btn-blaze; }
+.btn-chunky[data-variant="leaf"]     { @apply bg-leaf shadow-btn-leaf; }
 
 .btn-chunky[data-variant="ghost"] {
-  @apply bg-transparent border-2 border-line text-white shadow-none;
-  box-shadow: 0 4px 0 rgba(255,255,255,0.08);
+  @apply bg-transparent border-2 border-line text-white;
+  box-shadow: 0 4px 0 rgba(255,255,255,0.06);
 }
 
-.btn-chunky:active {
-  box-shadow: none !important;
-}
+.btn-chunky:active { box-shadow: none !important; }
+.btn-chunky:disabled { @apply opacity-40 active:translate-y-0; box-shadow: none !important; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
-
 .safe-b { padding-bottom: env(safe-area-inset-bottom); }
 .safe-t { padding-top: env(safe-area-inset-top); }
+
+/* Roadmap node */
+.node-circle {
+  @apply w-16 h-16 rounded-full flex items-center justify-center font-display text-xl border-4 transition-all;
+}
+.node-done    { @apply bg-elephant-500 border-elephant-700 shadow-btn-elephant text-white; }
+.node-current { @apply bg-sun border-[#B98325] shadow-btn-sun text-ink; }
+.node-locked  { @apply bg-surface2 border-line text-white/30; }
