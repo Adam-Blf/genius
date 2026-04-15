@@ -5,6 +5,7 @@ import { X, Heart, Check } from 'lucide-react'
 import { db, addXP, consumeHeart, bumpStreakIfNewDay, recordChapterScore, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CHAPTERS } from '../chapters'
+import { feedbackCorrect, feedbackWrong, feedbackLevelUp } from '../lib/feedback'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -111,11 +112,35 @@ export function LearnPage() {
     if (correct) {
       setCorrectCount((x) => x + 1)
       addXP(10)
+      feedbackCorrect()
     } else {
       consumeHeart()
+      feedbackWrong()
     }
-    if (idx === cards.length - 1) bumpStreakIfNewDay()
+    if (idx === cards.length - 1) {
+      bumpStreakIfNewDay()
+      feedbackLevelUp()
+    }
   }
+
+  // Keyboard shortcuts · 1-4 for choices, Enter/Space for next
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (!current) return
+      if (revealed && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        setIdx((x) => x + 1)
+        return
+      }
+      if (!revealed && ['1', '2', '3', '4'].includes(e.key)) {
+        const i = parseInt(e.key, 10) - 1
+        if (choices[i]) handleChoose(choices[i])
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  })
 
   const progress = ((idx + (revealed ? 1 : 0)) / cards.length) * 100
   const hearts = profile?.hearts ?? 0
@@ -162,7 +187,7 @@ export function LearnPage() {
         </AnimatePresence>
 
         <div className="space-y-3 mt-auto">
-          {choices.map((c) => {
+          {choices.map((c, choiceIdx) => {
             const isCorrect = c === current.answer
             const state = revealed
               ? isCorrect
@@ -189,7 +214,10 @@ export function LearnPage() {
                 className={`w-full text-left rounded-2xl border-2 px-5 py-4 font-semibold transition ${cls}`}
               >
                 <span className="flex items-center justify-between">
-                  {c}
+                  <span className="flex items-center gap-3">
+                    <kbd className="font-mono text-[10px] text-white/40 border border-line rounded px-1.5 py-0.5">{choiceIdx + 1}</kbd>
+                    {c}
+                  </span>
                   {state === 'correct' && <Check className="w-5 h-5 text-leaf" />}
                   {state === 'wrong' && <X className="w-5 h-5 text-blaze" />}
                 </span>
