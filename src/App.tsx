@@ -9,6 +9,8 @@ import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
 import { SettingsPage } from './pages/Settings'
 import { DailyPage } from './pages/Daily'
+import { InstallBanner } from './components/InstallBanner'
+import { OfflineBanner } from './components/OfflineBanner'
 import { seedIfEmpty, forceReseed } from './seed'
 import { regenHeartsIfNeeded } from './db'
 
@@ -83,6 +85,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20">
+      <OfflineBanner />
+      <InstallBanner />
       <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
