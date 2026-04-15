@@ -7,6 +7,7 @@ import { LearnPage } from './pages/Learn'
 import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
+import { SettingsPage } from './pages/Settings'
 import { seedIfEmpty, forceReseed } from './seed'
 import { regenHeartsIfNeeded } from './db'
 
@@ -97,6 +98,7 @@ export default function App() {
             <Route path="/learn/:scope" element={<LearnPage />} />
             <Route path="/add" element={<AddCardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

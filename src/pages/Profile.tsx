@@ -2,7 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, getOrCreateProfile } from '../db'
 import { CHAPTERS } from '../chapters'
-import { Flame, Heart, Zap, Trophy, Pencil, Check, Linkedin, Share2 } from 'lucide-react'
+import { Flame, Heart, Zap, Trophy, Pencil, Check, Linkedin, Share2, Settings as SettingsIcon, TrendingUp } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Sparkline } from '../components/Sparkline'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://genius.adam.beloucif.com'
 
@@ -23,6 +25,19 @@ export function ProfilePage() {
     return { total, correct, accuracy: total > 0 ? Math.round((correct / total) * 100) : 0 }
   })
   const chapterRows = useLiveQuery(async () => await db.chapterProgress.toArray())
+  const last30 = useLiveQuery(async () => {
+    const now = Date.now()
+    const startOfDayMs = 24 * 3600 * 1000
+    const days: number[] = new Array(30).fill(0)
+    const attempts = await db.attempts.toArray()
+    const todayStart = Math.floor(now / startOfDayMs) * startOfDayMs
+    attempts.forEach((a) => {
+      if (!a.correct) return
+      const d = Math.floor((todayStart - a.at) / startOfDayMs)
+      if (d >= 0 && d < 30) days[29 - d] += 10 // +10 XP per correct
+    })
+    return days
+  })
   const completedChapters = (chapterRows ?? []).filter((r) => (r.completedAt ?? 0) > 0).length
   const [editing, setEditing] = useState(false)
   const [nick, setNick] = useState('')
@@ -109,6 +124,38 @@ export function ProfilePage() {
           <div className="text-xs text-white/50 mt-1">Reussite ({stats?.total ?? 0} Q)</div>
         </div>
       </div>
+
+      {/* Sparkline XP 30j */}
+      {last30 && last30.some((v) => v > 0) && (
+        <div className="mb-8 bg-surface border border-line rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-elephant-300" />
+              <span className="text-sm font-semibold">XP · 30 derniers jours</span>
+            </div>
+            <span className="font-display text-xl text-elephant-300">
+              {last30.reduce((s, v) => s + v, 0)}
+            </span>
+          </div>
+          <div className="text-elephant-300">
+            <Sparkline values={last30} />
+          </div>
+          <div className="flex justify-between font-mono text-[9px] uppercase tracking-wider text-white/40 mt-1">
+            <span>-30j</span>
+            <span>aujourd'hui</span>
+          </div>
+        </div>
+      )}
+
+      {/* Settings link */}
+      <Link to="/settings" className="flex items-center gap-3 mb-6 p-4 bg-surface border border-line hover:border-white/20 rounded-2xl transition">
+        <SettingsIcon className="w-4 h-4 text-elephant-300" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Reglages</div>
+          <div className="text-xs text-white/50">Son, vibrations, theme</div>
+        </div>
+        <span className="text-white/40">→</span>
+      </Link>
 
       {/* LinkedIn share · all unlocked */}
       {unlockedBadges.length > 0 && (
