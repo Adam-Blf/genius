@@ -4,7 +4,9 @@ export interface Chapter {
   title: string
   subtitle: string
   emoji: string
-  cardUids: string[]
+  /** Cartes pour chapitres curés. Chapitres générés n'ont que `cardCount`. */
+  cardUids?: string[]
+  cardCount?: number
 }
 
 /**
@@ -103,14 +105,14 @@ import generatedManifest from './generated/chapters.json'
 
 const OFFSET = CHAPTERS.length
 const GENERATED: Chapter[] = (generatedManifest.chapters as Array<{
-  id: string; title: string; subtitle: string; emoji: string; cardUids: string[]
+  id: string; title: string; subtitle: string; emoji: string; cardCount: number
 }>).map((c, i) => ({
   id: c.id,
   order: OFFSET + i + 1,
   title: c.title,
   subtitle: c.subtitle,
   emoji: c.emoji,
-  cardUids: c.cardUids,
+  cardCount: c.cardCount,
 }))
 
 CHAPTERS.push(...GENERATED)

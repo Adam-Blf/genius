@@ -124,7 +124,7 @@ export function HomePage() {
                       </div>
                       <div className="font-display text-xl">{ch.title}</div>
                       <div className="text-xs text-white/50">
-                        {ch.cardUids.length} cartes · Meilleur {prog?.bestScore ?? 0}/10
+                        {(ch.cardUids?.length ?? ch.cardCount ?? 0)} cartes · Meilleur {prog?.bestScore ?? 0}/10
                       </div>
                     </div>
                   </>
@@ -136,7 +136,7 @@ export function HomePage() {
                       </div>
                       <div className="font-display text-xl">{ch.title}</div>
                       <div className="text-xs text-white/50">
-                        {ch.cardUids.length} cartes · Meilleur {prog?.bestScore ?? 0}/10
+                        {(ch.cardUids?.length ?? ch.cardCount ?? 0)} cartes · Meilleur {prog?.bestScore ?? 0}/10
                       </div>
                     </div>
                     <div className={`node-circle node-${state}`}>

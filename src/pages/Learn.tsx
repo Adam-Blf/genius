@@ -5,6 +5,7 @@ import { X, Heart, Check } from 'lucide-react'
 import { db, addXP, consumeHeart, bumpStreakIfNewDay, recordChapterScore, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CHAPTERS } from '../chapters'
+import { ensureChapterSeeded } from '../lib/generated'
 import { feedbackCorrect, feedbackWrong, feedbackLevelUp } from '../lib/feedback'
 import { review, getDueCards } from '../lib/sm2'
 
@@ -23,10 +24,18 @@ export function LearnPage() {
 
   const chapter = chapterId ? CHAPTERS.find((c) => c.id === chapterId) : undefined
 
+  // Seed paresseux : assure que les cartes de ce chapitre sont en Dexie avant le tirage.
+  useEffect(() => { if (chapterId) void ensureChapterSeeded(chapterId) }, [chapterId])
+
   const cards = useLiveQuery(async () => {
     const all = await db.flashcards.toArray()
     if (chapter) {
-      return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean) as typeof all
+      if (chapter.cardUids?.length) {
+        return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean) as typeof all
+      }
+      // Chapitre généré : query par chapterId après seed paresseux.
+      if (chapterId) await ensureChapterSeeded(chapterId)
+      return db.flashcards.where('chapterId').equals(chapter.id).toArray()
     }
     if (scope === 'review') {
       // SM-2 due cards · if none fall back to random

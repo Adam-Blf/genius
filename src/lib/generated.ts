@@ -41,34 +41,53 @@ export async function loadChapterCards(chapterId: string) {
 
 const SEED_FLAG_KEY = "genius.generatedSeededAt";
 
-/** Insère toutes les cartes générées dans Dexie si pas déjà fait. */
-export async function seedGenerated(): Promise<void> {
+/**
+ * Seed paresseux par chapitre : appelé à l'ouverture d'un chapitre.
+ * Charge le JSON correspondant, insère les cartes manquantes dans Dexie,
+ * marque le chapitre comme seedé dans localStorage pour éviter toute I/O au
+ * prochain accès. C'est la voie rapide par défaut.
+ */
+export async function ensureChapterSeeded(chapterId: string): Promise<void> {
+  const flagKey = `${SEED_FLAG_KEY}.${chapterId}`;
+  if (localStorage.getItem(flagKey)) return;
+  const cards = await loadChapterCards(chapterId);
+  if (!cards.length) return;
+  const uids = cards.map((c) => c.uid);
+  const existing = await db.flashcards.where("uid").anyOf(uids).toArray();
+  const existingUids = new Set(existing.map((c) => c.uid));
+  const toInsert: Flashcard[] = cards
+    .filter((c) => !existingUids.has(c.uid))
+    .map((c) => ({ ...c, source: "generic", createdAt: Date.now() } as Flashcard));
+  if (toInsert.length) await db.flashcards.bulkAdd(toInsert);
+  localStorage.setItem(flagKey, "1");
+}
+
+/**
+ * Seed global · non bloquant. À appeler en background après le render initial.
+ * Traite les chapitres par petits batches avec `requestIdleCallback` pour ne
+ * jamais geler l'UI. Marque la version globale quand tout est terminé.
+ */
+export function seedGeneratedInBackground(): void {
   const done = localStorage.getItem(SEED_FLAG_KEY);
   const currentVersion = manifest.generatedAt as string;
   if (done === currentVersion) return;
 
-  const existingUids = new Set<string>(
-    (await db.flashcards.where("source").equals("generic").toArray()).map((c) => c.uid),
-  );
-  const toInsert: Flashcard[] = [];
-  let i = 0;
-  const total = GENERATED_CHAPTERS.length;
-  for (const ch of GENERATED_CHAPTERS) {
-    const cards = await loadChapterCards(ch.id);
-    for (const c of cards) {
-      if (existingUids.has(c.uid)) continue;
-      toInsert.push({
-        ...c,
-        source: "generic",
-        createdAt: Date.now(),
-      } as Flashcard);
+  const queue = [...GENERATED_CHAPTERS];
+  const idle: (cb: () => void) => void =
+    (typeof requestIdleCallback !== "undefined")
+      ? (cb) => requestIdleCallback(() => cb(), { timeout: 1000 })
+      : (cb) => setTimeout(cb, 50);
+
+  const tick = async () => {
+    const batch = queue.splice(0, 5);
+    if (!batch.length) {
+      localStorage.setItem(SEED_FLAG_KEY, currentVersion);
+      return;
     }
-    i++;
-    // Insertion par batches pour ne pas bloquer le thread trop longtemps.
-    if (toInsert.length >= 1000 || i === total) {
-      if (toInsert.length) await db.flashcards.bulkAdd(toInsert);
-      toInsert.length = 0;
+    for (const ch of batch) {
+      try { await ensureChapterSeeded(ch.id); } catch { /* skip */ }
     }
-  }
-  localStorage.setItem(SEED_FLAG_KEY, currentVersion);
+    idle(tick);
+  };
+  idle(tick);
 }
