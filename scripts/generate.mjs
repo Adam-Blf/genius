@@ -513,6 +513,404 @@ async function fleuvesParContinent() {
   }
 }
 
+/**
+ * 12. Films par décennie (Oscar Best Picture + top rated)
+ */
+async function filmsParDecennie() {
+  const q = `
+    SELECT ?film ?filmLabel ?year ?directorLabel WHERE {
+      ?film wdt:P31 wd:Q11424 ; wdt:P577 ?date ; wdt:P57 ?director .
+      ?award ^wdt:P166 ?film . FILTER(?award IN (wd:Q102427, wd:Q103360, wd:Q179808, wd:Q213080))
+      BIND(YEAR(?date) AS ?year)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 2000`;
+  try {
+    const rows = await sparql(q);
+    const byDec = new Map();
+    for (const r of rows) {
+      const y = +r.year?.value;
+      if (!y) continue;
+      const dec = Math.floor(y / 10) * 10;
+      if (!byDec.has(dec)) byDec.set(dec, []);
+      byDec.get(dec).push(r);
+    }
+    const allDirs = [...new Set(rows.map(r => r.directorLabel?.value).filter(Boolean))];
+    for (const [dec, items] of [...byDec].sort((a, b) => a[0] - b[0])) {
+      const chapterId = `films-${dec}s`;
+      const seen = new Set();
+      const cards = [];
+      for (const r of items) {
+        const f = r.filmLabel?.value, d = r.directorLabel?.value;
+        if (!f || !d || seen.has(f)) continue;
+        seen.add(f);
+        cards.push(makeCard({
+          chapterId, category: "arts",
+          question: `Qui a réalisé « ${f} » (${r.year.value}) ?`,
+          answer: d, choicesPool: allDirs,
+        }));
+        if (cards.length >= 12) break;
+      }
+      if (cards.length >= 3)
+        addChapter({ id: chapterId, title: `Films ${dec}s`, subtitle: `${cards.length} films primés`, emoji: "🎬", category: "arts", cards });
+    }
+    console.log(`✓ films · ${byDec.size} décennies`);
+  } catch (e) { console.warn(`✗ films:`, e.message); }
+}
+
+/**
+ * 13. Prix Nobel par discipline × décennie.
+ */
+async function nobelParDiscipline() {
+  const disciplines = [
+    { id: "phys", label: "Physique", q: "Q38104", emoji: "⚛️" },
+    { id: "chim", label: "Chimie", q: "Q44585", emoji: "🧪" },
+    { id: "med", label: "Médecine", q: "Q80061", emoji: "💊" },
+    { id: "lit", label: "Littérature", q: "Q37922", emoji: "📚" },
+    { id: "peace", label: "Paix", q: "Q35637", emoji: "🕊️" },
+    { id: "eco", label: "Économie", q: "Q47170", emoji: "💹" },
+  ];
+  for (const d of disciplines) {
+    const qq = `
+      SELECT ?p ?pLabel ?year WHERE {
+        ?p p:P166 ?aw . ?aw ps:P166 wd:${d.q} ; pq:P585 ?date .
+        BIND(YEAR(?date) AS ?year)
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+      } ORDER BY ?year`;
+    try {
+      const rows = await sparql(qq);
+      const names = [...new Set(rows.map(r => r.pLabel?.value).filter(Boolean))];
+      const byDec = new Map();
+      for (const r of rows) {
+        const y = +r.year?.value; if (!y) continue;
+        const dec = Math.floor(y / 10) * 10;
+        if (!byDec.has(dec)) byDec.set(dec, []);
+        byDec.get(dec).push(r);
+      }
+      for (const [dec, items] of [...byDec].sort((a, b) => a[0] - b[0])) {
+        const chapterId = `nobel-${d.id}-${dec}`;
+        const cards = items.slice(0, 15).map(r => makeCard({
+          chapterId, category: "sciences",
+          question: `Prix Nobel de ${d.label} en ${r.year.value} ?`,
+          answer: r.pLabel.value, choicesPool: names,
+        }));
+        if (cards.length >= 3)
+          addChapter({ id: chapterId, title: `Nobel ${d.label} · ${dec}s`, subtitle: `${cards.length} lauréats`, emoji: d.emoji, category: "sciences", cards });
+      }
+    } catch (e) { console.warn(`✗ nobel ${d.label}:`, e.message); }
+  }
+}
+
+/**
+ * 14. Écrivains célèbres par nationalité.
+ */
+async function ecrivainsParPays() {
+  const q = `
+    SELECT ?p ?pLabel ?natLabel ?birth WHERE {
+      ?p wdt:P106 wd:Q36180 ; wdt:P27 ?nat ; wdt:P569 ?birth .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 3000`;
+  try {
+    const rows = await sparql(q);
+    const byNat = new Map();
+    for (const r of rows) {
+      const k = r.natLabel?.value;
+      if (!k) continue;
+      if (!byNat.has(k)) byNat.set(k, []);
+      byNat.get(k).push(r);
+    }
+    const names = [...new Set(rows.map(r => r.pLabel?.value).filter(Boolean))];
+    for (const [nat, items] of byNat) {
+      if (items.length < 5) continue;
+      const slug = nat.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `ecriv-${slug}`;
+      const seen = new Set();
+      const cards = [];
+      for (const r of items) {
+        const n = r.pLabel?.value;
+        if (!n || seen.has(n)) continue;
+        seen.add(n);
+        const year = r.birth?.value?.slice(0, 4);
+        cards.push(makeCard({
+          chapterId, category: "arts",
+          question: `Écrivain ${nat} né en ${year} ?`,
+          answer: n, choicesPool: names,
+        }));
+        if (cards.length >= 10) break;
+      }
+      if (cards.length >= 3)
+        addChapter({ id: chapterId, title: `Écrivains · ${nat}`, subtitle: `${cards.length} auteurs`, emoji: "✍️", category: "arts", cards });
+    }
+    console.log(`✓ écrivains · ${byNat.size} nationalités`);
+  } catch (e) { console.warn(`✗ écrivains:`, e.message); }
+}
+
+/**
+ * 15. Scientifiques par discipline.
+ */
+async function scientifiquesParDiscipline() {
+  const disc = [
+    { id: "phys", label: "physicien·ne", q: "Q169470", emoji: "⚛️" },
+    { id: "math", label: "mathématicien·ne", q: "Q170790", emoji: "🔢" },
+    { id: "chim", label: "chimiste", q: "Q593644", emoji: "🧪" },
+    { id: "bio", label: "biologiste", q: "Q864503", emoji: "🧬" },
+    { id: "astro", label: "astronome", q: "Q11063", emoji: "🔭" },
+    { id: "phil", label: "philosophe", q: "Q4964182", emoji: "🤔" },
+  ];
+  for (const d of disc) {
+    const qq = `
+      SELECT ?p ?pLabel ?natLabel WHERE {
+        ?p wdt:P106 wd:${d.q} ; wdt:P27 ?nat .
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+      } LIMIT 1500`;
+    try {
+      const rows = await sparql(qq);
+      const byNat = new Map();
+      for (const r of rows) {
+        const k = r.natLabel?.value;
+        if (!k) continue;
+        if (!byNat.has(k)) byNat.set(k, []);
+        byNat.get(k).push(r.pLabel?.value);
+      }
+      const pool = [...new Set(rows.map(r => r.pLabel?.value).filter(Boolean))];
+      for (const [nat, list] of byNat) {
+        const uniq = [...new Set(list.filter(Boolean))];
+        if (uniq.length < 5) continue;
+        const slug = nat.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 20);
+        const chapterId = `sci-${d.id}-${slug}`;
+        const cards = uniq.slice(0, 10).map(n => makeCard({
+          chapterId, category: "sciences",
+          question: `Quel ${d.label} ${nat} célèbre ?`,
+          answer: n, choicesPool: pool,
+        }));
+        addChapter({ id: chapterId, title: `${d.label[0].toUpperCase()+d.label.slice(1)}s · ${nat}`, subtitle: `${cards.length} figures`, emoji: d.emoji, category: "sciences", cards });
+      }
+    } catch (e) { console.warn(`✗ sci ${d.label}:`, e.message); }
+  }
+}
+
+/**
+ * 16. Îles importantes par pays (superficie).
+ */
+async function ilesParPays() {
+  const q = `
+    SELECT ?i ?iLabel ?countryLabel ?area WHERE {
+      ?i wdt:P31 wd:Q23442 ; wdt:P17 ?country ; wdt:P2046 ?area .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 2000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value;
+      if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r);
+    }
+    const allIsles = [...new Set(rows.map(r => r.iLabel?.value).filter(Boolean))];
+    for (const [country, items] of byCountry) {
+      if (items.length < 4) continue;
+      items.sort((a, b) => +b.area.value - +a.area.value);
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `iles-${slug}`;
+      const cards = items.slice(0, 10).map(r => makeCard({
+        chapterId, category: "geo",
+        question: `Île rattachée à quel pays ? · ${r.iLabel.value}`,
+        answer: country, choicesPool: [...byCountry.keys()],
+      }));
+      addChapter({ id: chapterId, title: `Îles · ${country}`, subtitle: `${cards.length} plus grandes`, emoji: "🏝️", category: "geo", cards });
+    }
+    console.log(`✓ îles · ${byCountry.size} pays`);
+  } catch (e) { console.warn(`✗ îles:`, e.message); }
+}
+
+/**
+ * 17. Champions League winners (UEFA).
+ */
+async function championsLeague() {
+  const q = `
+    SELECT ?ed ?edLabel ?winnerLabel ?year WHERE {
+      ?ed wdt:P31 wd:Q18756140 ; wdt:P1346 ?winner ; wdt:P585 ?date .
+      BIND(YEAR(?date) AS ?year)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } ORDER BY ?year`;
+  try {
+    const rows = await sparql(q);
+    const teams = [...new Set(rows.map(r => r.winnerLabel?.value).filter(Boolean))];
+    const cards = rows.filter(r => r.year && r.winnerLabel).map(r => makeCard({
+      chapterId: "uefa-cl", category: "sports",
+      question: `Vainqueur de la Ligue des Champions ${r.year.value} ?`,
+      answer: r.winnerLabel.value, choicesPool: teams,
+    }));
+    if (cards.length) addChapter({ id: "uefa-cl", title: "Ligue des Champions UEFA", subtitle: `${cards.length} éditions`, emoji: "🏆", category: "sports", cards });
+  } catch (e) { console.warn(`✗ UCL:`, e.message); }
+}
+
+/**
+ * 18. Jeux olympiques d'été · pays hôtes.
+ */
+async function jeuxOlympiques() {
+  const q = `
+    SELECT ?ed ?edLabel ?cityLabel ?year WHERE {
+      ?ed wdt:P31 wd:Q159821 ; wdt:P276 ?city ; wdt:P580 ?date .
+      BIND(YEAR(?date) AS ?year)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } ORDER BY ?year`;
+  try {
+    const rows = await sparql(q);
+    const cities = [...new Set(rows.map(r => r.cityLabel?.value).filter(Boolean))];
+    const cards = rows.filter(r => r.year && r.cityLabel).map(r => makeCard({
+      chapterId: "jo-ete", category: "sports",
+      question: `Ville hôte des JO d'été ${r.year.value} ?`,
+      answer: r.cityLabel.value, choicesPool: cities,
+    }));
+    if (cards.length) addChapter({ id: "jo-ete", title: "JO d'été · villes hôtes", subtitle: `${cards.length} éditions`, emoji: "🏅", category: "sports", cards });
+  } catch (e) { console.warn(`✗ JO:`, e.message); }
+}
+
+/**
+ * 19. Montagnes et sommets par pays.
+ */
+async function montagnesParPays() {
+  const q = `
+    SELECT ?m ?mLabel ?countryLabel ?elev WHERE {
+      ?m wdt:P31 wd:Q8502 ; wdt:P17 ?country ; wdt:P2044 ?elev .
+      FILTER(?elev > 2000)
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 2000`;
+  try {
+    const rows = await sparql(q);
+    const byCountry = new Map();
+    for (const r of rows) {
+      const k = r.countryLabel?.value;
+      if (!k) continue;
+      if (!byCountry.has(k)) byCountry.set(k, []);
+      byCountry.get(k).push(r);
+    }
+    for (const [country, items] of byCountry) {
+      if (items.length < 5) continue;
+      items.sort((a, b) => +b.elev.value - +a.elev.value);
+      const slug = country.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 25);
+      const chapterId = `mont-${slug}`;
+      const cards = items.slice(0, 10).map(r => makeCard({
+        chapterId, category: "geo",
+        question: `Sommet de ${Math.round(+r.elev.value)} m situé en ?`,
+        answer: country, choicesPool: [...byCountry.keys()],
+      }));
+      addChapter({ id: chapterId, title: `Montagnes · ${country}`, subtitle: `Plus hauts sommets`, emoji: "🏔️", category: "geo", cards });
+    }
+    console.log(`✓ montagnes · ${byCountry.size} pays`);
+  } catch (e) { console.warn(`✗ montagnes:`, e.message); }
+}
+
+/**
+ * 20. Races de chiens par origine.
+ */
+async function racesChiens() {
+  const q = `
+    SELECT ?b ?bLabel ?originLabel WHERE {
+      ?b wdt:P31 wd:Q39367 . OPTIONAL { ?b wdt:P495 ?origin . }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 600`;
+  try {
+    const rows = await sparql(q);
+    const byOrigin = new Map();
+    for (const r of rows) {
+      const k = r.originLabel?.value || "?";
+      if (k === "?") continue;
+      if (!byOrigin.has(k)) byOrigin.set(k, []);
+      byOrigin.get(k).push(r.bLabel?.value);
+    }
+    const allBreeds = [...new Set(rows.map(r => r.bLabel?.value).filter(Boolean))];
+    for (const [origin, breeds] of byOrigin) {
+      const uniq = [...new Set(breeds.filter(Boolean))];
+      if (uniq.length < 4) continue;
+      const slug = origin.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 20);
+      const cards = uniq.slice(0, 10).map(b => makeCard({
+        chapterId: `chien-${slug}`, category: "divers",
+        question: `Race de chien originaire de ${origin} ?`,
+        answer: b, choicesPool: allBreeds,
+      }));
+      addChapter({ id: `chien-${slug}`, title: `Chiens · ${origin}`, subtitle: `${cards.length} races`, emoji: "🐕", category: "divers", cards });
+    }
+    console.log(`✓ chiens · ${byOrigin.size} origines`);
+  } catch (e) { console.warn(`✗ chiens:`, e.message); }
+}
+
+/**
+ * 21. Dieux par mythologie.
+ */
+async function mythologies() {
+  const mythos = [
+    { id: "grec", label: "grecque", q: "Q42675", emoji: "⚡" },
+    { id: "romaine", label: "romaine", q: "Q2859204", emoji: "🏛️" },
+    { id: "nordique", label: "nordique", q: "Q106030", emoji: "⚔️" },
+    { id: "egyptienne", label: "égyptienne", q: "Q51615", emoji: "🐍" },
+    { id: "hindoue", label: "hindoue", q: "Q46681", emoji: "🕉️" },
+    { id: "japonaise", label: "japonaise", q: "Q217041", emoji: "⛩️" },
+  ];
+  for (const m of mythos) {
+    const qq = `
+      SELECT ?d ?dLabel ?domainLabel WHERE {
+        ?d wdt:P31/wdt:P279* wd:Q178885 ; wdt:P1343 wd:${m.q} .
+        OPTIONAL { ?d wdt:P101 ?domain }
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+      } LIMIT 100`;
+    try {
+      const rows = await sparql(qq);
+      const names = [...new Set(rows.map(r => r.dLabel?.value).filter(Boolean))];
+      const seen = new Set();
+      const cards = [];
+      for (const r of rows) {
+        const n = r.dLabel?.value, d = r.domainLabel?.value;
+        if (!n || seen.has(n)) continue;
+        seen.add(n);
+        cards.push(makeCard({
+          chapterId: `myth-${m.id}`, category: "histoire",
+          question: d ? `Divinité ${m.label} liée à ${d} ?` : `Divinité de la mythologie ${m.label} ?`,
+          answer: n, choicesPool: names,
+        }));
+        if (cards.length >= 15) break;
+      }
+      if (cards.length >= 3)
+        addChapter({ id: `myth-${m.id}`, title: `Mythologie · ${m.label}`, subtitle: `${cards.length} figures divines`, emoji: m.emoji, category: "histoire", cards });
+    } catch (e) { console.warn(`✗ myth ${m.label}:`, e.message); }
+  }
+}
+
+/**
+ * 22. Planètes, lunes et corps célestes.
+ */
+async function corpsCelestes() {
+  const q = `
+    SELECT ?b ?bLabel ?parentLabel WHERE {
+      ?b wdt:P31/wdt:P279* wd:Q2537 . ?b wdt:P397 ?parent .
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en" }
+    } LIMIT 300`;
+  try {
+    const rows = await sparql(q);
+    const byParent = new Map();
+    for (const r of rows) {
+      const k = r.parentLabel?.value;
+      if (!k) continue;
+      if (!byParent.has(k)) byParent.set(k, []);
+      byParent.get(k).push(r.bLabel?.value);
+    }
+    const pool = [...new Set(rows.map(r => r.bLabel?.value).filter(Boolean))];
+    for (const [parent, moons] of byParent) {
+      const uniq = [...new Set(moons.filter(Boolean))];
+      if (uniq.length < 3) continue;
+      const slug = parent.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 20);
+      const cards = uniq.slice(0, 10).map(m => makeCard({
+        chapterId: `lune-${slug}`, category: "sciences",
+        question: `Lune/satellite de ${parent} ?`,
+        answer: m, choicesPool: pool,
+      }));
+      addChapter({ id: `lune-${slug}`, title: `Satellites · ${parent}`, subtitle: `${cards.length} corps`, emoji: "🌙", category: "sciences", cards });
+    }
+    console.log(`✓ satellites · ${byParent.size} parents`);
+  } catch (e) { console.warn(`✗ satellites:`, e.message); }
+}
+
 // ─────────────────────────── Exécution ───────────────────────────
 
 const tasks = [
@@ -527,6 +925,17 @@ const tasks = [
   villesParPays,
   monnaiesChapitre,
   fleuvesParContinent,
+  filmsParDecennie,
+  nobelParDiscipline,
+  ecrivainsParPays,
+  scientifiquesParDiscipline,
+  ilesParPays,
+  championsLeague,
+  jeuxOlympiques,
+  montagnesParPays,
+  racesChiens,
+  mythologies,
+  corpsCelestes,
 ];
 
 console.log(`→ lance ${tasks.length} templates SPARQL...`);
