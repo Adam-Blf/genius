@@ -12,6 +12,7 @@ import { DailyPage } from './pages/Daily'
 import { InstallBanner } from './components/InstallBanner'
 import { OfflineBanner } from './components/OfflineBanner'
 import { seedIfEmpty, forceReseed } from './seed'
+import { seedGenerated } from './lib/generated'
 import { regenHeartsIfNeeded } from './db'
 
 const SEED_VERSION = '2026-04-15-v2'
@@ -67,6 +68,8 @@ export default function App() {
       } else {
         await seedIfEmpty()
       }
+      // Charge les ~3000 cartes générées depuis Wikidata (idempotent).
+      await seedGenerated()
       await regenHeartsIfNeeded()
       setReady(true)
     })()
