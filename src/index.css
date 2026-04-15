@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink text-white antialiased font-sans;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* Duolingo-style chunky button with bottom shadow "press" feel */
+.btn-chunky {
+  @apply relative font-bold uppercase tracking-wide rounded-2xl px-6 py-3 text-white transition-all active:translate-y-1 select-none;
+}
+
+.btn-chunky[data-variant="grass"] { @apply bg-grass shadow-btn-grass; }
+.btn-chunky[data-variant="sun"]   { @apply bg-sun text-ink shadow-btn-sun; }
+.btn-chunky[data-variant="blaze"] { @apply bg-blaze shadow-btn-blaze; }
+.btn-chunky[data-variant="mint"]  { @apply bg-mint shadow-btn-mint; }
+
+.btn-chunky[data-variant="ghost"] {
+  @apply bg-transparent border-2 border-line text-white shadow-none;
+  box-shadow: 0 4px 0 rgba(255,255,255,0.08);
+}
+
+.btn-chunky:active {
+  box-shadow: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.safe-b { padding-bottom: env(safe-area-inset-bottom); }
+.safe-t { padding-top: env(safe-area-inset-top); }
