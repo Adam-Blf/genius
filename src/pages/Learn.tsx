@@ -6,6 +6,7 @@ import { db, addXP, consumeHeart, bumpStreakIfNewDay, recordChapterScore, type C
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CHAPTERS } from '../chapters'
 import { feedbackCorrect, feedbackWrong, feedbackLevelUp } from '../lib/feedback'
+import { review, getDueCards } from '../lib/sm2'
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -26,6 +27,11 @@ export function LearnPage() {
     const all = await db.flashcards.toArray()
     if (chapter) {
       return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean) as typeof all
+    }
+    if (scope === 'review') {
+      // SM-2 due cards · if none fall back to random
+      const due = await getDueCards(10)
+      return due.length > 0 ? due : shuffle(all).slice(0, 10)
     }
     const filtered = scope ? all.filter((c) => c.category === (scope as Category)) : all
     return shuffle(filtered).slice(0, 10)
@@ -109,6 +115,7 @@ export function LearnPage() {
     setRevealed(true)
     const correct = c === current.answer
     db.attempts.add({ cardUid: current.uid, correct, at: Date.now() })
+    review(current.uid, correct ? 5 : 2)
     if (correct) {
       setCorrectCount((x) => x + 1)
       addXP(10)

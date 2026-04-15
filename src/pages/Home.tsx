@@ -1,9 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import { Flame, Heart, Zap, Lock, Check, ChevronRight } from 'lucide-react'
+import { Flame, Heart, Zap, Lock, Check, ChevronRight, Calendar, Repeat } from 'lucide-react'
 import { db, getOrCreateProfile } from '../db'
 import { CHAPTERS, chapterState } from '../chapters'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { getDailyCard, isDailyAnswered } from '../lib/daily'
+import { stats as srsStats } from '../lib/sm2'
+import type { Flashcard } from '../db'
 
 export function HomePage() {
   const profile = useLiveQuery(async () => getOrCreateProfile())
@@ -12,6 +16,17 @@ export function HomePage() {
     (progressRows ?? []).filter((p) => (p.completedAt ?? 0) > 0).map((p) => p.chapterId)
   )
   const currentChapter = CHAPTERS.find((c) => chapterState(c, completedIds) === 'current')
+
+  const [daily, setDaily] = useState<Flashcard | null>(null)
+  const [dailyDone, setDailyDone] = useState(false)
+  const [srs, setSrs] = useState({ total: 0, due: 0, learned: 0 })
+  useEffect(() => {
+    getDailyCard().then(setDaily)
+    setDailyDone(isDailyAnswered())
+    setSrs(srsStats())
+    const i = setInterval(() => setSrs(srsStats()), 5000)
+    return () => clearInterval(i)
+  }, [])
 
   return (
     <div className="max-w-lg mx-auto px-5 pt-10 pb-6 safe-t">
@@ -51,8 +66,32 @@ export function HomePage() {
         </p>
       </section>
 
+      {/* Daily + review row */}
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        <Link to="/daily" className="bg-surface border border-line rounded-2xl p-4 hover:border-elephant-400/50 transition">
+          <div className="flex items-center justify-between">
+            <Calendar className="w-4 h-4 text-sun" />
+            {dailyDone && <Check className="w-4 h-4 text-leaf" />}
+          </div>
+          <div className="font-display text-xl mt-3">Defi du jour</div>
+          <div className="text-xs text-white/50 mt-0.5">
+            {dailyDone ? 'Deja joue · reviens demain' : daily ? '1 question pour l\'honneur' : '...'}
+          </div>
+        </Link>
+        <Link to="/learn/review" className="bg-surface border border-line rounded-2xl p-4 hover:border-elephant-400/50 transition">
+          <div className="flex items-center justify-between">
+            <Repeat className="w-4 h-4 text-elephant-300" />
+            {srs.due > 0 && <span className="font-mono text-[10px] bg-blaze/20 text-blaze px-1.5 py-0.5 rounded-full">{srs.due}</span>}
+          </div>
+          <div className="font-display text-xl mt-3">Revision</div>
+          <div className="text-xs text-white/50 mt-0.5">
+            {srs.due > 0 ? `${srs.due} cartes a reviser` : srs.total > 0 ? 'A jour' : 'Joue pour demarrer'}
+          </div>
+        </Link>
+      </div>
+
       {/* Roadmap path */}
-      <h2 className="font-display text-2xl mb-4">Parcours</h2>
+      <h2 className="font-display text-2xl mb-4">Parcours · {CHAPTERS.length} chapitres</h2>
       <div className="relative">
         {CHAPTERS.map((ch, i) => {
           const state = chapterState(ch, completedIds)

@@ -8,6 +8,7 @@ import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
 import { SettingsPage } from './pages/Settings'
+import { DailyPage } from './pages/Daily'
 import { seedIfEmpty, forceReseed } from './seed'
 import { regenHeartsIfNeeded } from './db'
 
@@ -99,6 +100,7 @@ export default function App() {
             <Route path="/add" element={<AddCardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/daily" element={<DailyPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>
