@@ -7,8 +7,10 @@ import { LearnPage } from './pages/Learn'
 import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
-import { seedIfEmpty } from './seed'
+import { seedIfEmpty, forceReseed } from './seed'
 import { regenHeartsIfNeeded } from './db'
+
+const SEED_VERSION = '2026-04-15-v2'
 
 function BottomNav() {
   const location = useLocation()
@@ -54,7 +56,13 @@ export default function App() {
 
   useEffect(() => {
     ;(async () => {
-      await seedIfEmpty()
+      const v = localStorage.getItem('genius-seed-version')
+      if (v !== SEED_VERSION) {
+        await forceReseed()
+        localStorage.setItem('genius-seed-version', SEED_VERSION)
+      } else {
+        await seedIfEmpty()
+      }
       await regenHeartsIfNeeded()
       setReady(true)
     })()
