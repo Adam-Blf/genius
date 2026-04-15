@@ -11,9 +11,11 @@ export async function exportUserCards(): Promise<Blob> {
   const payload: ExportPayload = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    cards: cards.map(({ id: _id, ...rest }) => rest),
+    cards: cards.map((c) => {
+      const { id: _id, ...rest } = c
+      return rest
+    }),
   }
-  void _id
   return new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
 }
 
