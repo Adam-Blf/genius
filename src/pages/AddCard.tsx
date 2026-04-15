@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { db, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Trash2, Upload, FileText, Globe, Lock, Sparkles } from 'lucide-react'
+import { Trash2, Upload, FileText, Globe, Lock, Sparkles, Download, Archive } from 'lucide-react'
+import { exportUserCards, downloadBlob, importUserCards } from '../lib/portability'
 import { motion, AnimatePresence } from 'framer-motion'
 import { extractTextFromFile, extractQAs, basicClean, type ExtractedQA } from '../lib/pdf'
 
@@ -278,7 +279,42 @@ export function AddCardPage() {
       )}
 
       <section>
-        <h2 className="font-display text-2xl mb-4">Tes cartes ({userCards?.length ?? 0})</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-2xl">Tes cartes ({userCards?.length ?? 0})</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                const blob = await exportUserCards()
+                downloadBlob(blob, `genius-cards-${new Date().toISOString().slice(0, 10)}.json`)
+                showToast('Export telecharge')
+              }}
+              disabled={!userCards?.length}
+              className="p-2 rounded-xl bg-surface border border-line hover:border-white/20 disabled:opacity-40"
+              title="Exporter JSON"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            <label className="p-2 rounded-xl bg-surface border border-line hover:border-white/20 cursor-pointer" title="Importer JSON">
+              <Archive className="w-4 h-4" />
+              <input
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  try {
+                    const { imported, skipped } = await importUserCards(f)
+                    showToast(`${imported} importees, ${skipped} ignorees`)
+                  } catch {
+                    showToast('Fichier invalide')
+                  }
+                  e.target.value = ''
+                }}
+              />
+            </label>
+          </div>
+        </div>
         {userCards && userCards.length === 0 && <p className="text-white/50 text-sm">Aucune carte pour l'instant.</p>}
         <div className="space-y-2">
           {userCards?.map((c) => (
