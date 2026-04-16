@@ -41,11 +41,11 @@ export function setPremiumUntil(ms: number) {
   localStorage.setItem(UNTIL_KEY, String(ms));
 }
 
-export async function startCheckout(email?: string): Promise<string> {
+export async function startCheckout(plan: "monthly" | "yearly" = "monthly", email?: string): Promise<string> {
   const r = await fetch("/api/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: getUserId(), email }),
+    body: JSON.stringify({ userId: getUserId(), email, plan }),
   });
   if (!r.ok) {
     const d = await r.json().catch(() => ({}));

@@ -11,7 +11,12 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" });
 
 // Prix mensuel Genius Premium · configuré côté dashboard Stripe
-const PRICE_MONTHLY = process.env.STRIPE_PRICE_MONTHLY!;
+// Allowlist des plans autorisés · le client ne passe qu'un identifiant court
+// pour éviter la substitution de price_id côté navigateur.
+const PRICES: Record<string, string | undefined> = {
+  monthly: process.env.STRIPE_PRICE_MONTHLY,
+  yearly: process.env.STRIPE_PRICE_YEARLY,
+};
 const ALLOWED_ORIGIN = process.env.APP_URL || "https://genius.vercel.app";
 
 function setCors(res: VercelResponse) {
@@ -33,7 +38,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "method_not_allowed" });
 
-  const { userId, email } = (req.body || {}) as { userId?: string; email?: string };
+  const { userId, email, plan } = (req.body || {}) as { userId?: string; email?: string; plan?: string };
+  const priceId = PRICES[plan ?? "monthly"];
+  if (!priceId) return res.status(400).json({ error: "bad_plan" });
   if (!userId || typeof userId !== "string" || userId.length < 8 || userId.length > 64) {
     return res.status(400).json({ error: "bad_userId" });
   }
@@ -50,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: PRICE_MONTHLY, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${ALLOWED_ORIGIN}/premium/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${ALLOWED_ORIGIN}/premium?canceled=1`,
       allow_promotion_codes: true,
