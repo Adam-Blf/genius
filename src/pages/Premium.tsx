@@ -21,6 +21,7 @@ const BENEFITS = [
 export function PremiumPage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly')
   const [err, setErr] = useState<string | null>(null)
   const [params] = useSearchParams()
   const canceled = params.get('canceled')
@@ -30,7 +31,7 @@ export function PremiumPage() {
     setErr(null)
     setLoading(true)
     try {
-      const url = await startCheckout()
+      const url = await startCheckout(plan)
       window.location.assign(url)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'error')
@@ -81,10 +82,25 @@ export function PremiumPage() {
 
       {!active && (
         <>
-          <div className="bg-surface border border-line rounded-2xl p-5 mb-4 text-center">
-            <div className="font-display text-4xl">4,99 €<span className="text-lg text-white/50"> / mois</span></div>
-            <div className="text-xs text-white/50 mt-1">Annulable à tout moment · essai 7 jours</div>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button
+              onClick={() => setPlan('monthly')}
+              className={`rounded-2xl p-4 border transition text-left ${plan === 'monthly' ? 'border-sun bg-sun/10' : 'border-line bg-surface'}`}
+            >
+              <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">Mensuel</div>
+              <div className="font-display text-2xl mt-1">4,99 €<span className="text-xs text-white/50"> /mois</span></div>
+            </button>
+            <button
+              onClick={() => setPlan('yearly')}
+              className={`relative rounded-2xl p-4 border transition text-left ${plan === 'yearly' ? 'border-sun bg-sun/10' : 'border-line bg-surface'}`}
+            >
+              <div className="absolute -top-2 right-3 text-[10px] font-mono bg-leaf text-ink px-2 py-0.5 rounded">-33%</div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">Annuel</div>
+              <div className="font-display text-2xl mt-1">39,90 €<span className="text-xs text-white/50"> /an</span></div>
+              <div className="text-[10px] text-white/50 mt-0.5">≈ 3,32 €/mois</div>
+            </button>
           </div>
+          <p className="text-xs text-white/50 text-center mb-4">Annulable à tout moment · essai 7 jours</p>
           <button
             onClick={onSubscribe}
             disabled={loading}
