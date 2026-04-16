@@ -2,9 +2,11 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, getOrCreateProfile } from '../db'
 import { CHAPTERS } from '../chapters'
-import { Flame, Heart, Zap, Trophy, Pencil, Check, Linkedin, Share2, Settings as SettingsIcon, TrendingUp } from 'lucide-react'
+import { Flame, Heart, Zap, Trophy, Pencil, Check, Linkedin, Share2, Settings as SettingsIcon, TrendingUp, LogIn, LogOut, Users, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Sparkline } from '../components/Sparkline'
+import { useAuth } from '../contexts/AuthContext'
+import { publishPendingCards } from '../lib/publicCards'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://genius.adam.beloucif.com'
 
@@ -17,7 +19,19 @@ function shareToLinkedIn(title: string, summary: string) {
 }
 
 export function ProfilePage() {
+  const auth = useAuth()
   const profile = useLiveQuery(async () => getOrCreateProfile())
+  const [publishing, setPublishing] = useState(false)
+  const [publishMsg, setPublishMsg] = useState<string | null>(null)
+
+  const handlePublish = async () => {
+    if (!auth.user) return
+    setPublishing(true)
+    const { published, failed } = await publishPendingCards(auth.user.id)
+    setPublishMsg(published > 0 ? `${published} cartes publiees` : failed > 0 ? `${failed} echecs` : 'Rien a publier')
+    setPublishing(false)
+    setTimeout(() => setPublishMsg(null), 3000)
+  }
   const stats = useLiveQuery(async () => {
     const attempts = await db.attempts.toArray()
     const correct = attempts.filter((a) => a.correct).length
@@ -72,9 +86,18 @@ export function ProfilePage() {
     <div className="max-w-lg mx-auto px-5 pt-10 pb-6 safe-t">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-elephant-400 to-elephant-700 flex items-center justify-center font-display text-3xl italic shadow-pop">
-          {(profile?.nickname ?? 'G').charAt(0)}
-        </div>
+        {auth.user?.user_metadata?.avatar_url ? (
+          <img
+            src={auth.user.user_metadata.avatar_url}
+            alt=""
+            className="w-16 h-16 rounded-full shadow-pop object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-elephant-400 to-elephant-700 flex items-center justify-center font-display text-3xl italic shadow-pop">
+            {(profile?.nickname ?? 'G').charAt(0)}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           {editing ? (
             <div className="flex items-center gap-2">
@@ -144,6 +167,48 @@ export function ProfilePage() {
             <span>-30j</span>
             <span>aujourd'hui</span>
           </div>
+        </div>
+      )}
+
+      {/* Account · Auth */}
+      {auth.available && (
+        <div className="mb-6 space-y-2">
+          {auth.user ? (
+            <>
+              <button onClick={handlePublish} disabled={publishing} className="w-full flex items-center gap-3 p-4 bg-surface border border-line hover:border-white/20 rounded-2xl transition">
+                <Upload className="w-4 h-4 text-sun" />
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-semibold">{publishMsg ?? 'Publier mes cartes "public"'}</div>
+                  <div className="text-xs text-white/50">{publishing ? 'Publication...' : 'Sync vers la communaute'}</div>
+                </div>
+                <span className="text-white/40">→</span>
+              </button>
+              <Link to="/community" className="flex items-center gap-3 p-4 bg-surface border border-line hover:border-white/20 rounded-2xl transition">
+                <Users className="w-4 h-4 text-elephant-300" />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Communaute</div>
+                  <div className="text-xs text-white/50">Decouvre les cartes publiques</div>
+                </div>
+                <span className="text-white/40">→</span>
+              </Link>
+              <button onClick={auth.signOut} className="w-full flex items-center gap-3 p-4 bg-surface border border-line hover:border-blaze/40 rounded-2xl transition text-blaze/80">
+                <LogOut className="w-4 h-4" />
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-semibold">Se deconnecter</div>
+                  <div className="text-xs text-white/50">{auth.user.email}</div>
+                </div>
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="w-full flex items-center gap-3 p-4 bg-elephant-500/10 border border-elephant-400/30 hover:border-elephant-400 rounded-2xl transition">
+              <LogIn className="w-4 h-4 text-elephant-300" />
+              <div className="flex-1">
+                <div className="text-sm font-semibold">Se connecter</div>
+                <div className="text-xs text-white/50">Sync cloud, publication, communaute</div>
+              </div>
+              <span className="text-elephant-300">→</span>
+            </Link>
+          )}
         </div>
       )}
 

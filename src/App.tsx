@@ -9,8 +9,11 @@ import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
 import { SettingsPage } from './pages/Settings'
 import { DailyPage } from './pages/Daily'
+import { LoginPage } from './pages/Login'
+import { CommunityPage } from './pages/Community'
 import { InstallBanner } from './components/InstallBanner'
 import { OfflineBanner } from './components/OfflineBanner'
+import { AuthProvider } from './contexts/AuthContext'
 import { seedIfEmpty, forceReseed } from './seed'
 import { regenHeartsIfNeeded } from './db'
 
@@ -84,6 +87,7 @@ export default function App() {
   }
 
   return (
+    <AuthProvider>
     <div className="min-h-screen pb-20">
       <OfflineBanner />
       <InstallBanner />
@@ -105,10 +109,13 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/daily" element={<DailyPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/community" element={<CommunityPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>
       <BottomNav />
     </div>
+    </AuthProvider>
   )
 }
