@@ -8,6 +8,8 @@ import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
 import { CoursePage } from './pages/Course'
+import { PremiumPage } from './pages/Premium'
+import { PremiumSuccessPage } from './pages/PremiumSuccess'
 import { SettingsPage } from './pages/Settings'
 import { DailyPage } from './pages/Daily'
 import { InstallBanner } from './components/InstallBanner'
@@ -111,6 +113,8 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/daily" element={<DailyPage />} />
+            <Route path="/premium" element={<PremiumPage />} />
+            <Route path="/premium/success" element={<PremiumSuccessPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

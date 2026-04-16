@@ -147,6 +147,18 @@ export function ProfilePage() {
         </div>
       )}
 
+      {/* Premium CTA */}
+      <Link to="/premium" className="flex items-center gap-3 mb-3 p-4 rounded-2xl transition bg-gradient-to-br from-sun/20 to-elephant-500/20 border border-sun/40 hover:border-sun/60">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sun to-elephant-300 flex items-center justify-center shrink-0">
+          <span className="text-ink">👑</span>
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Genius Premium</div>
+          <div className="text-xs text-white/60">Cœurs illimités · hors-ligne total · sans pub</div>
+        </div>
+        <span className="text-white/40">→</span>
+      </Link>
+
       {/* Settings link */}
       <Link to="/settings" className="flex items-center gap-3 mb-6 p-4 bg-surface border border-line hover:border-white/20 rounded-2xl transition">
         <SettingsIcon className="w-4 h-4 text-elephant-300" />
