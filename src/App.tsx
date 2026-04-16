@@ -7,6 +7,7 @@ import { LearnPage } from './pages/Learn'
 import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
+import { CoursePage } from './pages/Course'
 import { SettingsPage } from './pages/Settings'
 import { DailyPage } from './pages/Daily'
 import { InstallBanner } from './components/InstallBanner'
@@ -102,6 +103,7 @@ export default function App() {
           <Routes location={location}>
             <Route path="/" element={<HomePage />} />
             <Route path="/chapter/:id" element={<ChapterPage />} />
+            <Route path="/chapter/:id/course" element={<CoursePage />} />
             <Route path="/learn" element={<LearnPage />} />
             <Route path="/learn/chapter/:chapterId" element={<LearnPage />} />
             <Route path="/learn/:scope" element={<LearnPage />} />

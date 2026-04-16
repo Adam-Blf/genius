@@ -72,12 +72,17 @@ export function ChapterPage() {
         </div>
       </div>
 
-      <Link to={`/learn/chapter/${chapter.id}`} className="btn-chunky block text-center mb-10" data-variant="elephant">
-        <span className="inline-flex items-center gap-2">
-          <Play className="w-4 h-4 fill-white" />
-          {done ? 'Rejouer' : 'Commencer'}
-        </span>
-      </Link>
+      <div className="grid grid-cols-2 gap-2 mb-10">
+        <Link to={`/chapter/${chapter.id}/course`} className="btn-chunky text-center" data-variant="sun">
+          <span className="inline-flex items-center gap-2">📖 Cours</span>
+        </Link>
+        <Link to={`/learn/chapter/${chapter.id}`} className="btn-chunky text-center" data-variant="elephant">
+          <span className="inline-flex items-center gap-2">
+            <Play className="w-4 h-4 fill-white" />
+            {done ? 'Rejouer' : 'Examen'}
+          </span>
+        </Link>
+      </div>
 
       <h2 className="font-display text-2xl mb-4">Questions de ce chapitre</h2>
       <div className="space-y-2">
