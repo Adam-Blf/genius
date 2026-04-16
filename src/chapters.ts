@@ -4,7 +4,9 @@ export interface Chapter {
   title: string
   subtitle: string
   emoji: string
-  cardUids: string[]
+  /** Cartes pour chapitres curés. Chapitres générés n'ont que `cardCount`. */
+  cardUids?: string[]
+  cardCount?: number
 }
 
 /**
@@ -95,6 +97,25 @@ export const CHAPTERS: Chapter[] = [
   { id: 'ch-eco', order: 25, title: 'Economie et tech', subtitle: 'Monnaies, entreprises, numerique', emoji: '💼',
     cardUids: ['eco1', 'eco2', 'eco3', 'eco4', 'eco5', 'eco6'] },
 ]
+
+// Chapitres générés automatiquement depuis Wikidata (scripts/generate.mjs).
+// On les concatène après les chapitres "curés" pour que le début du parcours
+// reste la roadmap thématique soigneusement ordonnée.
+import generatedManifest from './generated/chapters.json'
+
+const OFFSET = CHAPTERS.length
+const GENERATED: Chapter[] = (generatedManifest.chapters as Array<{
+  id: string; title: string; subtitle: string; emoji: string; cardCount: number
+}>).map((c, i) => ({
+  id: c.id,
+  order: OFFSET + i + 1,
+  title: c.title,
+  subtitle: c.subtitle,
+  emoji: c.emoji,
+  cardCount: c.cardCount,
+}))
+
+CHAPTERS.push(...GENERATED)
 
 export function chapterState(
   chapter: Chapter,

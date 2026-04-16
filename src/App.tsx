@@ -7,6 +7,9 @@ import { LearnPage } from './pages/Learn'
 import { AddCardPage } from './pages/AddCard'
 import { ProfilePage } from './pages/Profile'
 import { ChapterPage } from './pages/Chapter'
+import { CoursePage } from './pages/Course'
+import { PremiumPage } from './pages/Premium'
+import { PremiumSuccessPage } from './pages/PremiumSuccess'
 import { SettingsPage } from './pages/Settings'
 import { DailyPage } from './pages/Daily'
 import { LoginPage } from './pages/Login'
@@ -15,6 +18,7 @@ import { InstallBanner } from './components/InstallBanner'
 import { OfflineBanner } from './components/OfflineBanner'
 import { AuthProvider } from './contexts/AuthContext'
 import { seedIfEmpty, forceReseed } from './seed'
+import { seedGeneratedInBackground } from './lib/generated'
 import { regenHeartsIfNeeded } from './db'
 
 const SEED_VERSION = '2026-04-15-v2'
@@ -72,6 +76,9 @@ export default function App() {
       }
       await regenHeartsIfNeeded()
       setReady(true)
+      // Seed en background (requestIdleCallback) · ne bloque pas l'UI.
+      // Chaque chapitre est de toute façon seedé à la demande via ensureChapterSeeded.
+      seedGeneratedInBackground()
     })()
   }, [])
 
@@ -102,6 +109,7 @@ export default function App() {
           <Routes location={location}>
             <Route path="/" element={<HomePage />} />
             <Route path="/chapter/:id" element={<ChapterPage />} />
+            <Route path="/chapter/:id/course" element={<CoursePage />} />
             <Route path="/learn" element={<LearnPage />} />
             <Route path="/learn/chapter/:chapterId" element={<LearnPage />} />
             <Route path="/learn/:scope" element={<LearnPage />} />
@@ -111,6 +119,8 @@ export default function App() {
             <Route path="/daily" element={<DailyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/community" element={<CommunityPage />} />
+            <Route path="/premium" element={<PremiumPage />} />
+            <Route path="/premium/success" element={<PremiumSuccessPage />} />
           </Routes>
         </motion.div>
       </AnimatePresence>

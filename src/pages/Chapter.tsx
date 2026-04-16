@@ -1,18 +1,27 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { ArrowLeft, Play, Check, Target } from 'lucide-react'
+import { useEffect } from 'react'
 import { db } from '../db'
 import { CHAPTERS } from '../chapters'
+import { ensureChapterSeeded } from '../lib/generated'
 
 export function ChapterPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const chapter = CHAPTERS.find((c) => c.id === id)
+  // Seed paresseux : garantit que les cartes de ce chapitre sont en Dexie.
+  useEffect(() => { if (id) void ensureChapterSeeded(id) }, [id])
   const progress = useLiveQuery(async () => id ? await db.chapterProgress.get(id) : undefined, [id])
   const cards = useLiveQuery(async () => {
-    if (!chapter) return []
-    const all = await db.flashcards.toArray()
-    return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean)
+    if (!chapter || !id) return []
+    // Chapitres curés : lookup par cardUids. Chapitres générés : query par chapterId.
+    if (chapter.cardUids?.length) {
+      const all = await db.flashcards.toArray()
+      return chapter.cardUids.map((uid) => all.find((c) => c.uid === uid)).filter(Boolean)
+    }
+    await ensureChapterSeeded(id)
+    return db.flashcards.where('chapterId').equals(id).toArray()
   }, [id])
 
   if (!chapter) {
@@ -49,7 +58,7 @@ export function ChapterPage() {
       <div className="grid grid-cols-3 gap-2 mb-8">
         <div className="bg-surface border border-line rounded-2xl p-3 text-center">
           <Target className="w-4 h-4 text-elephant-300 mx-auto mb-1" />
-          <div className="font-display text-2xl">{chapter.cardUids.length}</div>
+          <div className="font-display text-2xl">{(chapter.cardUids?.length ?? chapter.cardCount ?? 0)}</div>
           <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">Questions</div>
         </div>
         <div className="bg-surface border border-line rounded-2xl p-3 text-center">
@@ -63,12 +72,17 @@ export function ChapterPage() {
         </div>
       </div>
 
-      <Link to={`/learn/chapter/${chapter.id}`} className="btn-chunky block text-center mb-10" data-variant="elephant">
-        <span className="inline-flex items-center gap-2">
-          <Play className="w-4 h-4 fill-white" />
-          {done ? 'Rejouer' : 'Commencer'}
-        </span>
-      </Link>
+      <div className="grid grid-cols-2 gap-2 mb-10">
+        <Link to={`/chapter/${chapter.id}/course`} className="btn-chunky text-center" data-variant="sun">
+          <span className="inline-flex items-center gap-2">📖 Cours</span>
+        </Link>
+        <Link to={`/learn/chapter/${chapter.id}`} className="btn-chunky text-center" data-variant="elephant">
+          <span className="inline-flex items-center gap-2">
+            <Play className="w-4 h-4 fill-white" />
+            {done ? 'Rejouer' : 'Examen'}
+          </span>
+        </Link>
+      </div>
 
       <h2 className="font-display text-2xl mb-4">Questions de ce chapitre</h2>
       <div className="space-y-2">
