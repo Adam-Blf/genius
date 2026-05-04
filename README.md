@@ -1,5 +1,10 @@
 # Genius · Culture Generale
 
+<!-- adam-badges:start -->
+[![commits](https://img.shields.io/github/commit-activity/t/Adam-Blf/genius?color=001329&label=commits&style=flat-square)](https://github.com/Adam-Blf/genius/commits) [![visites](https://hits.sh/github.com/Adam-Blf/genius.svg?style=flat-square&label=visites&color=001329)](https://hits.sh/github.com/Adam-Blf/genius/) [![last commit](https://img.shields.io/github/last-commit/Adam-Blf/genius?color=D4A437&style=flat-square&label=dernier%20push)](https://github.com/Adam-Blf/genius/commits) [![top language](https://img.shields.io/github/languages/top/Adam-Blf/genius?style=flat-square)](https://github.com/Adam-Blf/genius) [![license](https://img.shields.io/github/license/Adam-Blf/genius?style=flat-square&color=D4A437)](LICENSE)
+<!-- adam-badges:end -->
+
+
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
