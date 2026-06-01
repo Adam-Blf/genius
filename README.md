@@ -14,6 +14,30 @@
 
 PWA Duolingo-like pour apprendre la culture generale en swipant, avec **flashcards generiques** pre-chargees et **ajout de cartes perso** stockees localement.
 
+## Architecture
+
+```mermaid
+flowchart TB
+    Main["src/main.tsx<br/>bootstrap React · React Router · vite-plugin-pwa"]
+    App["src/App.tsx<br/>routes · AuthContext · bannières install/offline"]
+    Pages["src/pages<br/>Home · Learn · Daily · Course · Chapter<br/>AddCard · Community · Premium · Profile · Settings · Login"]
+    Lib["src/lib<br/>sm2 · daily · feedback · generated · pdf · premium · security"]
+    Db["src/db.ts · Dexie<br/>IndexedDB · flashcards · progression · XP · streaks"]
+    Auth["src/contexts/AuthContext.tsx<br/>session Supabase"]
+    Supa["Supabase<br/>auth · cartes publiques communauté"]
+    Stripe["api/checkout · verify · webhook<br/>Vercel functions · Stripe premium"]
+
+    Main --> App
+    App --> Pages
+    App --> Auth
+    Pages --> Lib
+    Pages --> Db
+    Lib --> Db
+    Auth --> Supa
+    Pages --> Stripe
+    Stripe --> Supa
+```
+
 ## Features
 
 - 60+ questions pre-chargees (6 categories · Histoire, Sciences, Geo, Arts, Sports, Divers)
