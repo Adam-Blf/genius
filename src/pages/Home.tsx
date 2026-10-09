@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import { Flame, Heart, Zap, Lock, Check, ChevronRight, Calendar, Repeat } from 'lucide-react'
+import { Bolt, Calendar, Check, ChevronRight, Flame, Heart, Lock, Repeat3 } from "reicon-react";
 import { db, getOrCreateProfile } from '../db'
 import { CHAPTERS, chapterState } from '../chapters'
 import { motion } from 'framer-motion'
@@ -40,11 +40,11 @@ export function HomePage() {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="flex items-center gap-1 text-blaze font-bold">
-            <Heart className="w-4 h-4 fill-blaze" />
+            <Heart className="w-4 h-4 text-blaze" weight="Filled" />
             {profile?.hearts ?? 0}
           </span>
           <span className="flex items-center gap-1 text-sun font-bold">
-            <Zap className="w-4 h-4 fill-sun" />
+            <Bolt className="w-4 h-4 text-sun" weight="Filled" />
             {profile?.xp ?? 0}
           </span>
           <span className="flex items-center gap-1 text-elephant-300 font-bold">
@@ -80,7 +80,7 @@ export function HomePage() {
         </Link>
         <Link to="/learn/review" className="bg-surface border border-line rounded-2xl p-4 hover:border-elephant-400/50 transition">
           <div className="flex items-center justify-between">
-            <Repeat className="w-4 h-4 text-elephant-300" />
+            <Repeat3 className="w-4 h-4 text-elephant-300" />
             {srs.due > 0 && <span className="font-mono text-[10px] bg-blaze/20 text-blaze px-1.5 py-0.5 rounded-full">{srs.due}</span>}
           </div>
           <div className="font-display text-xl mt-3">Revision</div>

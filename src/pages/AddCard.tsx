@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { db, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Trash2, Upload, FileText, Globe, Lock, Sparkles, Download, Archive } from 'lucide-react'
+import { Archive, Download, FileText, Globe, Lock, Sparkles, Trash2, Upload } from "reicon-react";
 import { exportUserCards, downloadBlob, importUserCards } from '../lib/portability'
 import { motion, AnimatePresence } from 'framer-motion'
 import { extractTextFromFile, extractQAs, basicClean, type ExtractedQA } from '../lib/pdf'

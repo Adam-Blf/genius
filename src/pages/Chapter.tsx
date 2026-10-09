@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, Play, Check, Target } from 'lucide-react'
+import { ArrowLeft, Check, Play, RecordCircle3 } from "reicon-react";
 import { useEffect } from 'react'
 import { db } from '../db'
 import { CHAPTERS } from '../chapters'
@@ -57,7 +57,7 @@ export function ChapterPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-8">
         <div className="bg-surface border border-line rounded-2xl p-3 text-center">
-          <Target className="w-4 h-4 text-elephant-300 mx-auto mb-1" />
+          <RecordCircle3 className="w-4 h-4 text-elephant-300 mx-auto mb-1" />
           <div className="font-display text-2xl">{(chapter.cardUids?.length ?? chapter.cardCount ?? 0)}</div>
           <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">Questions</div>
         </div>
@@ -66,7 +66,7 @@ export function ChapterPage() {
           <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 mt-1">Meilleur</div>
         </div>
         <div className="bg-surface border border-line rounded-2xl p-3 text-center">
-          {done ? <Check className="w-4 h-4 text-leaf mx-auto mb-1" /> : <Target className="w-4 h-4 text-white/40 mx-auto mb-1" />}
+          {done ? <Check className="w-4 h-4 text-leaf mx-auto mb-1" /> : <RecordCircle3 className="w-4 h-4 text-white/40 mx-auto mb-1" />}
           <div className="font-display text-2xl">{progress?.attempts ?? 0}</div>
           <div className="text-[10px] font-mono uppercase tracking-wider text-white/50">Tentatives</div>
         </div>
@@ -78,7 +78,7 @@ export function ChapterPage() {
         </Link>
         <Link to={`/learn/chapter/${chapter.id}`} className="btn-chunky text-center" data-variant="elephant">
           <span className="inline-flex items-center gap-2">
-            <Play className="w-4 h-4 fill-white" />
+            <Play className="w-4 h-4 text-white" weight="Filled" />
             {done ? 'Rejouer' : 'Examen'}
           </span>
         </Link>

@@ -2,7 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { db, getOrCreateProfile } from '../db'
 import { CHAPTERS } from '../chapters'
-import { Flame, Heart, Zap, Trophy, Pencil, Check, Linkedin, Share2, Settings as SettingsIcon, TrendingUp, LogIn, LogOut, Users, Upload } from 'lucide-react'
+import { ArrowDoorIn, ArrowDoorOut, Bolt, Check, Flame, Gear, Heart, Pen, Share, TrendUp, Trophy, Upload, Users } from "reicon-react";
+import { LinkedinLogo } from '../components/brand/LinkedinLogo'
 import { Link } from 'react-router-dom'
 import { Sparkline } from '../components/Sparkline'
 import { useAuth } from '../contexts/AuthContext'
@@ -116,7 +117,7 @@ export function ProfilePage() {
             <div className="flex items-center gap-2">
               <h1 className="font-display text-3xl truncate">{profile?.nickname}</h1>
               <button onClick={() => { setNick(profile?.nickname ?? ''); setEditing(true) }} className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/5">
-                <Pencil className="w-4 h-4" />
+                <Pen className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -127,17 +128,17 @@ export function ProfilePage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 mb-8">
         <div className="bg-surface border border-line rounded-2xl p-4">
-          <Zap className="w-5 h-5 text-sun mb-2 fill-sun" />
+          <Bolt className="w-5 h-5 text-sun mb-2" weight="Filled" />
           <div className="font-display text-3xl">{profile?.xp ?? 0}</div>
           <div className="text-xs text-white/50 mt-1">XP total</div>
         </div>
         <div className="bg-surface border border-line rounded-2xl p-4">
-          <Flame className="w-5 h-5 text-blaze mb-2 fill-blaze" />
+          <Flame className="w-5 h-5 text-blaze mb-2" weight="Filled" />
           <div className="font-display text-3xl">{profile?.streak ?? 0}<span className="text-sm text-white/50"> j</span></div>
           <div className="text-xs text-white/50 mt-1">Serie en cours</div>
         </div>
         <div className="bg-surface border border-line rounded-2xl p-4">
-          <Heart className="w-5 h-5 text-blaze mb-2 fill-blaze" />
+          <Heart className="w-5 h-5 text-blaze mb-2" weight="Filled" />
           <div className="font-display text-3xl">{profile?.hearts ?? 0}<span className="text-sm text-white/50"> / 5</span></div>
           <div className="text-xs text-white/50 mt-1">Vies restantes</div>
         </div>
@@ -153,7 +154,7 @@ export function ProfilePage() {
         <div className="mb-8 bg-surface border border-line rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-elephant-300" />
+              <TrendUp className="w-4 h-4 text-elephant-300" />
               <span className="text-sm font-semibold">XP · 30 derniers jours</span>
             </div>
             <span className="font-display text-xl text-elephant-300">
@@ -204,7 +205,7 @@ export function ProfilePage() {
                 <span className="text-white/40">→</span>
               </Link>
               <button onClick={auth.signOut} className="w-full flex items-center gap-3 p-4 bg-surface border border-line hover:border-blaze/40 rounded-2xl transition text-blaze/80">
-                <LogOut className="w-4 h-4" />
+                <ArrowDoorOut className="w-4 h-4" />
                 <div className="flex-1 text-left">
                   <div className="text-sm font-semibold">Se deconnecter</div>
                   <div className="text-xs text-white/50">{auth.user.email}</div>
@@ -213,7 +214,7 @@ export function ProfilePage() {
             </>
           ) : (
             <Link to="/login" className="w-full flex items-center gap-3 p-4 bg-elephant-500/10 border border-elephant-400/30 hover:border-elephant-400 rounded-2xl transition">
-              <LogIn className="w-4 h-4 text-elephant-300" />
+              <ArrowDoorIn className="w-4 h-4 text-elephant-300" />
               <div className="flex-1">
                 <div className="text-sm font-semibold">Se connecter</div>
                 <div className="text-xs text-white/50">Sync cloud, publication, communaute</div>
@@ -226,7 +227,7 @@ export function ProfilePage() {
 
       {/* Settings link */}
       <Link to="/settings" className="flex items-center gap-3 mb-6 p-4 bg-surface border border-line hover:border-white/20 rounded-2xl transition">
-        <SettingsIcon className="w-4 h-4 text-elephant-300" />
+        <Gear className="w-4 h-4 text-elephant-300" />
         <div className="flex-1">
           <div className="text-sm font-semibold">Reglages</div>
           <div className="text-xs text-white/50">Son, vibrations, theme</div>
@@ -238,7 +239,7 @@ export function ProfilePage() {
       {unlockedBadges.length > 0 && (
         <div className="mb-8 bg-elephant-900/40 border border-elephant-700/40 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Linkedin className="w-4 h-4 text-elephant-300" />
+            <LinkedinLogo className="w-4 h-4" />
             <div className="font-semibold text-sm">Partage ton profil</div>
           </div>
           <p className="text-xs text-white/60 mb-3">
@@ -254,7 +255,7 @@ export function ProfilePage() {
             data-variant="elephant"
           >
             <span className="inline-flex items-center gap-2">
-              <Linkedin className="w-4 h-4" /> Partager sur LinkedIn
+              <LinkedinLogo className="w-4 h-4" /> Partager sur LinkedIn
             </span>
           </button>
         </div>
@@ -279,7 +280,7 @@ export function ProfilePage() {
                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-elephant-500/10 hover:bg-elephant-500/20 text-elephant-300 transition"
                 title="Partager sur LinkedIn"
               >
-                <Share2 className="w-3 h-3" />
+                <Share className="w-3 h-3" />
               </button>
             )}
           </div>

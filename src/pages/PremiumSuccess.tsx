@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Crown, Check } from 'lucide-react'
+import { Check, Crown } from "reicon-react";
 import { verifySession } from '../lib/premium'
 
 export function PremiumSuccessPage() {
