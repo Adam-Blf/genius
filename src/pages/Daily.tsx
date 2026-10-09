@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Calendar, Check, X } from 'lucide-react'
+import { ArrowLeft, Calendar, Check, X } from "reicon-react";
 import { addXP } from '../db'
 import { getDailyCard, isDailyAnswered, markDailyAnswered } from '../lib/daily'
 import { feedbackCorrect, feedbackWrong } from '../lib/feedback'

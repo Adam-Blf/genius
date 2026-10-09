@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Heart, Check } from 'lucide-react'
+import { Check, Heart, X } from "reicon-react";
 import { db, addXP, consumeHeart, bumpStreakIfNewDay, recordChapterScore, type Category } from '../db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CHAPTERS } from '../chapters'
@@ -176,7 +176,7 @@ export function LearnPage() {
           />
         </div>
         <span className="flex items-center gap-1 font-bold text-blaze">
-          <Heart className="w-5 h-5 fill-blaze" />
+          <Heart className="w-5 h-5 text-blaze" weight="Filled" />
           {hearts}
         </span>
       </div>

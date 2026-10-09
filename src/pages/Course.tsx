@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, BookOpen, GraduationCap, Sparkles } from 'lucide-react'
+import { ArrowLeft, BookOpen, GraduationCap, Sparkles } from "reicon-react";
 import { motion } from 'framer-motion'
 import { db, type Flashcard } from '../db'
 import { CHAPTERS } from '../chapters'

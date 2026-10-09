@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, X } from 'lucide-react'
+import { Download, X } from "reicon-react";
 
 interface BIPEvent extends Event {
   prompt: () => Promise<void>

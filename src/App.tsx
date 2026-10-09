@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
-import { Map, BookOpen, Plus, User } from 'lucide-react'
+import { BookOpen, Map, Plus, User } from "reicon-react";
 import { motion, AnimatePresence } from 'framer-motion'
 import { HomePage } from './pages/Home'
 import { LearnPage } from './pages/Learn'

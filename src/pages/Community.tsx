@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Check, Users } from 'lucide-react'
+import { ArrowLeft, Check, Plus, Users } from "reicon-react";
 import { fetchPublicCards, importPublicCardsToLocal } from '../lib/publicCards'
 import { useAuth } from '../contexts/AuthContext'
 import type { PublicCard } from '../lib/supabase'

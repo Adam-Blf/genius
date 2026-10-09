@@ -7,12 +7,12 @@
  */
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Crown, Check, ArrowLeft, Zap, Infinity as InfinityIcon, Heart, Sparkles, Shield } from 'lucide-react'
+import { ArrowLeft, Bolt, Check, Crown, Heart, Infinite, Shield, Sparkles } from "reicon-react";
 import { isPremium, premiumUntil, startCheckout } from '../lib/premium'
 
 const BENEFITS = [
-  { icon: InfinityIcon, title: 'Cœurs illimités', desc: "Apprends sans pause, les 5 cœurs ne bloquent plus ta progression." },
-  { icon: Zap, title: 'Tous les chapitres', desc: "Accès aux 2868 chapitres premium · culture G, sciences, sports, arts." },
+  { icon: Infinite, title: 'Cœurs illimités', desc: "Apprends sans pause, les 5 cœurs ne bloquent plus ta progression." },
+  { icon: Bolt, title: 'Tous les chapitres', desc: "Accès aux 2868 chapitres premium · culture G, sciences, sports, arts." },
   { icon: Sparkles, title: 'Mode hors-ligne total', desc: "Toutes les cartes pré-téléchargées pour le métro/avion." },
   { icon: Shield, title: 'Sans pub · jamais', desc: "Un environnement épuré, centré sur l'apprentissage." },
   { icon: Heart, title: 'Soutiens le projet', desc: "Un dev indé, pas d'ads, pas de tracking · ton abo paye les serveurs." },

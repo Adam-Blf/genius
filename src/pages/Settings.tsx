@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Volume2, Smartphone, Palette, Info } from 'lucide-react'
+import { ArrowLeft, InfoCircle, Mobile, Palette2, VolumeHigh } from "reicon-react";
 import { isSoundOn, setSound, isHapticOn, setHaptic } from '../lib/feedback'
 
 type Theme = 'dark' | 'light'
@@ -32,14 +32,14 @@ export function SettingsPage() {
         <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40 mb-3">Experience</h2>
         <div className="bg-surface border border-line rounded-2xl divide-y divide-line">
           <Row
-            icon={<Volume2 className="w-4 h-4 text-elephant-300" />}
+            icon={<VolumeHigh className="w-4 h-4 text-elephant-300" />}
             label="Son"
             desc="Tonalites correct/erreur/niveau"
             checked={sound}
             onChange={(v) => { setSound(v); setSoundState(v) }}
           />
           <Row
-            icon={<Smartphone className="w-4 h-4 text-elephant-300" />}
+            icon={<Mobile className="w-4 h-4 text-elephant-300" />}
             label="Vibrations"
             desc="Retour haptique (mobile)"
             checked={haptic}
@@ -52,7 +52,7 @@ export function SettingsPage() {
         <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40 mb-3">Apparence</h2>
         <div className="bg-surface border border-line rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Palette className="w-4 h-4 text-elephant-300" />
+            <Palette2 className="w-4 h-4 text-elephant-300" />
             <span className="text-sm font-semibold">Theme</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -75,7 +75,7 @@ export function SettingsPage() {
       <section>
         <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40 mb-3">A propos</h2>
         <div className="bg-surface border border-line rounded-2xl p-4 flex items-start gap-3">
-          <Info className="w-4 h-4 text-elephant-300 mt-0.5" />
+          <InfoCircle className="w-4 h-4 text-elephant-300 mt-0.5" />
           <div className="text-sm text-white/70">
             <div className="font-semibold text-white mb-1">Genius · v1</div>
             <p className="text-xs">PWA de culture generale gamifiee. Stockage 100% local. Par <a href="https://adam.beloucif.com" className="text-elephant-300 underline">Adam Beloucif</a>.</p>
